@@ -9,6 +9,16 @@
 #include "point.h"
 #define pi (2*acos(0.0))
 
+Point rotateOneAlongAnother(Point &toBeRotated, Point &respective, double angleOfRotation) {
+    Point temp = respective.crossMultiplication(toBeRotated);
+    double angleInRadian = angleOfRotation*pi / 180.0;
+    Point component1 = toBeRotated.constantScale(cos(angleInRadian));
+    Point component2 = temp.constantScale(sin(angleInRadian));
+    Point answer = component1.summation(component2);
+    return answer;
+}
+
+
 void clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0,0,0,0);	//color black

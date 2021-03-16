@@ -1,12 +1,8 @@
-
 #include <GL/glut.h>
 #include "functions.h"
 
-double cameraHeight;
-double cameraAngle;
 int drawgrid;
 int drawaxes;
-double angle;
 
 class Cam {
 public:
@@ -28,12 +24,34 @@ Cam myCamera;
 
 
 void keyboardListener(unsigned char key, int x,int y){
+    double positiveAngle = 3.0;
+    double negativeAngle = -3.0;
+
     switch(key){
-
         case '1':
-            drawgrid=1-drawgrid;
+            myCamera.lookDir = rotateOneAlongAnother(myCamera.lookDir, myCamera.upDir, positiveAngle);
+            myCamera.rightDir = myCamera.lookDir.crossMultiplication(myCamera.upDir);
             break;
-
+        case '2':
+            myCamera.lookDir = rotateOneAlongAnother(myCamera.lookDir, myCamera.upDir, negativeAngle);
+            myCamera.rightDir = myCamera.lookDir.crossMultiplication(myCamera.upDir);
+            break;
+        case '3':
+            myCamera.lookDir = rotateOneAlongAnother(myCamera.lookDir, myCamera.rightDir, positiveAngle);
+            myCamera.upDir = myCamera.rightDir.crossMultiplication(myCamera.lookDir);
+            break;
+        case '4':
+            myCamera.lookDir = rotateOneAlongAnother(myCamera.lookDir, myCamera.rightDir, negativeAngle);
+            myCamera.upDir = myCamera.rightDir.crossMultiplication(myCamera.lookDir);
+            break;
+        case '5':
+            myCamera.rightDir = rotateOneAlongAnother(myCamera.rightDir, myCamera.lookDir, negativeAngle);
+            myCamera.upDir = myCamera.rightDir.crossMultiplication(myCamera.lookDir);
+            break;
+        case '6':
+            myCamera.rightDir = rotateOneAlongAnother(myCamera.rightDir, myCamera.lookDir, positiveAngle);
+            myCamera.upDir = myCamera.rightDir.crossMultiplication(myCamera.lookDir);
+            break;
         default:
             break;
     }
@@ -132,22 +150,15 @@ int main(int argc, char **argv){
     glutInit(&argc,argv);
     glutInitWindowSize(500, 500);
     glutInitWindowPosition(0, 0);
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);	//Depth, Double buffer, RGB color
-
+    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
     glutCreateWindow("Problem 1");
-
     init();
-
-    glEnable(GL_DEPTH_TEST);	//enable Depth Testing
-
-    glutDisplayFunc(display);	//display callback function
-    glutIdleFunc(animate);		//what you want to do in the idle time (when no drawing is occuring)
-
+    glEnable(GL_DEPTH_TEST);
+    glutDisplayFunc(display);
+    glutIdleFunc(animate);
     glutKeyboardFunc(keyboardListener);
     glutSpecialFunc(specialKeyListener);
     //glutMouseFunc(mouseListener);
-
-    glutMainLoop();		//The main loop of OpenGL
-
+    glutMainLoop();
     return 0;
 }
