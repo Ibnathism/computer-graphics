@@ -3,9 +3,8 @@ project(Open_GL)
 
 set(CMAKE_CXX_STANDARD 14)
 
-#add_executable(Open-GL main.cpp)
-#add_executable(Open-GL util.h demo.cpp)
-#add_executable(Open-GL util.h camera.cpp)
-add_executable(Open-GL demo2.cpp)
+#add_executable(Open-GL demo2.cpp)
+#add_executable(Open-GL template.cpp)
+add_executable(Open-GL point.h functions.h problem1.cpp)
 set(OpenGlLinkers -lglut -lGLU -lGL)
 target_link_libraries(Open-GL ${OpenGlLinkers})
