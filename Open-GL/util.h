@@ -1,7 +1,3 @@
-//
-// Created by ashiq on 3/14/21.
-//
-
 #ifndef OFFLINE1_UTIL_H
 #define OFFLINE1_UTIL_H
 
@@ -9,17 +5,83 @@
 
 #include<cmath>
 #include <GL/glut.h>
+#include <iostream>
 
 #define pi (2*acos(0.0))
 
-struct point {
+class Vector {
+public:
     double x, y, z;
+
+    Vector sum(Vector rhs) const {
+
+        Vector res;
+
+        res.x = x + rhs.x;
+        res.y = y + rhs.y;
+        res.z = z + rhs.z;
+
+        return res;
+    }
+
+    Vector negate() const {
+
+        Vector res;
+
+        res.x = -x;
+        res.y = -y;
+        res.z = -z;
+
+        return res;
+    }
+
+    Vector cross(Vector rhs) const {
+
+        Vector res;
+
+        res.x = y * rhs.z - z * rhs.y;
+        res.y = z * rhs.x - x * rhs.z;
+        res.z = x * rhs.y - y * rhs.x;
+
+        return res;
+
+    }
+
+    Vector scale(double scalar) const {
+
+        Vector a;
+
+        if (scalar != 0){
+            a.x = x * scalar;
+            a.y = y * scalar;
+            a.z = z * scalar;
+        }
+
+        return a;
+    }
+
+
+    Vector rotate(struct Vector axis, double angleDegrees)
+    {
+        //rotate this vector with respect to an axis
+        Vector crossProduct = axis.cross(*this);
+
+        Vector r1 = this->scale(cos(angleDegrees * pi / 180));
+        Vector r2 = crossProduct.scale(sin(angleDegrees * pi / 180.0));
+
+        return r1.sum(r2);
+    }
+
+    void print() const {
+        std::cout<<"( "<<x<<","<<y<<","<<z<<" )"<<std::endl;
+    }
 };
+
 
 
 void drawAxes() {
 
-    glColor3f(1.0, 1.0, 1.0);
+
     glBegin(GL_LINES);
 
     {
@@ -43,7 +105,6 @@ void drawGrid() {
 
     int i;
 
-    glColor3f(0.6, 0.6, 0.6);
     glBegin(GL_LINES);
 
     {
@@ -87,8 +148,7 @@ void drawSquare(double a) {
 void drawCircle(double radius, int segments) {
 
     int i;
-    struct point points[100];
-    glColor3f(0.7, 0.7, 0.7);
+    Vector points[100];
 
     //generate points
     for (i = 0; i <= segments; i++) {
@@ -112,7 +172,7 @@ void drawCone(double radius, double height, int segments) {
 
     int i;
     double shade;
-    struct point points[100];
+    Vector points[100];
 
     //generate points
     for (i = 0; i <= segments; i++) {
@@ -126,7 +186,6 @@ void drawCone(double radius, double height, int segments) {
         if (i < segments / 2)shade = 2 * (double) i / (double) segments;
         else shade = 2 * (1.0 - (double) i / (double) segments);
 
-        glColor3f(shade, shade, shade);
         glBegin(GL_TRIANGLES);
 
         {
@@ -142,7 +201,7 @@ void drawCone(double radius, double height, int segments) {
 
 void drawSphere(double radius, int slices, int stacks) {
 
-    struct point points[100][100];
+    Vector points[100][100];
     int i, j;
     double h, r;
 
@@ -159,7 +218,7 @@ void drawSphere(double radius, int slices, int stacks) {
 
     //draw quads using generated points
     for (i = 0; i < stacks; i++) {
-        glColor3f((double) i / (double) stacks, (double) i / (double) stacks, (double) i / (double) stacks);
+        // glColor3f((double) i / (double) stacks, (double) i / (double) stacks, (double) i / (double) stacks);
         for (j = 0; j < slices; j++) {
             glBegin(GL_QUADS);
 
@@ -230,23 +289,23 @@ void specialKeyListener(int key, int x, int y) {
         case GLUT_KEY_LEFT:
             break;
 
-            */
-/* case GLUT_KEY_PAGE_UP:
-                break;
-            case GLUT_KEY_PAGE_DOWN:
-                break;
 
-            case GLUT_KEY_INSERT:
-                break;
+        case GLUT_KEY_PAGE_UP:
+            break;
+        case GLUT_KEY_PAGE_DOWN:
+            break;
 
-            case GLUT_KEY_HOME:
-                break;
-            case GLUT_KEY_END:
-                break;
+        case GLUT_KEY_INSERT:
+            break;
 
-            default:
-                break;
-            *//*
+        case GLUT_KEY_HOME:
+            break;
+        case GLUT_KEY_END:
+            break;
+
+        default:
+            break;
+
 
     }
 
@@ -275,7 +334,6 @@ void mouseListener(int button, int state, int x, int y) {    //x, y is the x-y o
 }
 
 */
-
 
 
 
