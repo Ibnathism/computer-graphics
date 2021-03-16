@@ -1,7 +1,6 @@
 #include <GL/glut.h>
 #include "functions.h"
 
-int drawgrid;
 int drawaxes;
 
 class Cam {

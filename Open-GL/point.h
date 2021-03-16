@@ -1,7 +1,3 @@
-//
-// Created by user on ১৬/৩/২১.
-//
-
 #ifndef OPEN_GL_POINT_H
 #define OPEN_GL_POINT_H
 
@@ -20,45 +16,37 @@ public:
 
     Point(double x, double y, double z) : x(x), y(y), z(z) {}
 
-    Point negatePoint() {
-        Point temp;
-        temp.x = -this->x;
-        temp.y = -this->y;
-        temp.z = -this->z;
-        return temp;
+    Point negatePoint() const {
+        return {-this->x, -this->y, -this->z};
     }
 
-    Point summation(Point &temp) {
-        Point answer;
-        answer.x = this->x + temp.x;
-        answer.y = this->y + temp.y;
-        answer.z = this->z + temp.z;
-        return answer;
+    Point summation(Point &temp) const {
+        double ansX = this->x + temp.x;
+        double ansY = this->y + temp.y;
+        double ansZ = this->z + temp.z;
+        return {ansX, ansY, ansZ};
     }
 
-    Point subtraction(Point &temp) {
-        Point answer;
-        answer.x = this->x - temp.x;
-        answer.y = this->y - temp.y;
-        answer.z = this->z - temp.z;
-        return answer;
+    Point subtraction(Point &temp) const {
+        double ansX = this->x - temp.x;
+        double ansY = this->y - temp.y;
+        double ansZ = this->z - temp.z;
+        return {ansX, ansY, ansZ};
     }
 
-    Point constantScale(double scalingConstant) {
-        Point temp;
-        if (scalingConstant==0) return temp;
-        temp.x = scalingConstant * this->x;
-        temp.y = scalingConstant * this->y;
-        temp.z = scalingConstant * this->z;
-        return temp;
+    Point constantScale(double scalingConstant) const {
+        if (scalingConstant==0) return {0, 0,0};
+        double ansX = scalingConstant * this->x;
+        double ansY = scalingConstant * this->y;
+        double ansZ = scalingConstant * this->z;
+        return {ansX, ansY, ansZ};
     }
 
-    Point crossMultiplication(Point &temp) {
-        Point answer;
-        answer.x = this->y*temp.z - this->z*temp.y;
-        answer.y = this->z*temp.x - this->x*temp.z;
-        answer.z = this->x*temp.y - this->y*temp.x;
-        return answer;
+    Point crossMultiplication(Point &temp) const {
+        double ansX = this->y*temp.z - this->z*temp.y;
+        double ansY = this->z*temp.x - this->x*temp.z;
+        double ansZ = this->x*temp.y - this->y*temp.x;
+        return {ansX, ansY, ansZ};
     }
 
 };
