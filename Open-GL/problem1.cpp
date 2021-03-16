@@ -115,21 +115,9 @@ void display(){
     double tempZ = myCamera.position.z;
     gluLookAt(tempX, tempY, tempZ, tempX+myCamera.lookDir.x, tempY+myCamera.lookDir.y, tempZ+myCamera.lookDir.z, myCamera.upDir.x, myCamera.upDir.y, myCamera.upDir.z);
     glMatrixMode(GL_MODELVIEW);
-
     drawAxes();
-    //drawGrid();
-
     glColor3f(1,0,0);
-    //drawSquare(10);
-
-    //drawSS();
-
-    //drawCircle(30,24);
-
-    //drawCone(20,50,24);
-
     drawSphere(30,24,20);
-
     glutSwapBuffers();
 }
 
