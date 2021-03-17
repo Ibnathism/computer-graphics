@@ -1,20 +1,21 @@
 #include <GL/glut.h>
 #include "functions.h"
 
+double circleRadius = 60;
+int rectangleWidth = 400;
+int rectangleHeight = 400;
+
 class Rect2D {
 public:
     Point topLeft, bottomLeft, topRight, bottomRight;
-    double width, height;
 
     Rect2D(){
-        width = 0;
-        height = 0;
         topLeft = Point();
         bottomLeft = Point();
         topRight = Point();
         bottomRight = Point();
     }
-    Rect2D(double width, double height) : width(width), height(height) {
+    Rect2D(double width, double height){
         double w = width/4.0;
         double h = height/4.0;
         topLeft = Point(-w, h, 0);
@@ -24,8 +25,19 @@ public:
     }
 };
 
-Rect2D rectangle;
+class Circle2D {
+public:
+    Point center;
+    double radius;
 
+    Circle2D() {}
+
+    Circle2D(const Point &center, double radius) : center(center), radius(radius) {}
+
+};
+
+Circle2D circle;
+Rect2D rectangle;
 
 void keyboardListener(unsigned char key, int x,int y){
     switch(key){
@@ -62,6 +74,8 @@ void display(){
     glMatrixMode(GL_MODELVIEW);
     glColor3f(0, 1, 0);
     draw2DRectangle(rectangle.topLeft, rectangle.bottomLeft, rectangle.topRight, rectangle.bottomRight);
+    glColor3f(1, 0, 0);
+    draw2DCircle(circle.center.x, circle.center.y, circle.radius, 80);
     glutSwapBuffers();
 }
 
@@ -75,7 +89,9 @@ void init(){
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(80,	1,	1,	1000.0);
-    rectangle = Rect2D(400, 400);
+    rectangle = Rect2D(rectangleWidth, rectangleHeight);
+    Point center(0, 0, 0);
+    circle = Circle2D(center, circleRadius);
 }
 
 int main(int argc, char **argv){
