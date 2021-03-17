@@ -85,12 +85,29 @@ void drawSquare(double a)
     }glEnd();
 }
 
+void draw2DRectangle(Point topLeft, Point bottomLeft, Point topRight, Point bottomRight) {
+    glBegin(GL_LINES);{
+        //Left Side
+        glVertex3f(topLeft.x, topLeft.y, topLeft.z);
+        glVertex3f(bottomLeft.x, bottomRight.y, bottomLeft.z);
+        //Right Side
+        glVertex3f(topRight.x, topRight.y, topRight.z);
+        glVertex3f(bottomRight.x, bottomRight.y, bottomRight.z);
+        //Top Side
+        glVertex3f(topLeft.x, topLeft.y, topLeft.z);
+        glVertex3f(topRight.x, topRight.y, topRight.z);
+        //Bottom Side
+        glVertex3f(bottomLeft.x, bottomLeft.y, bottomLeft.z);
+        glVertex3f(bottomRight.x, bottomRight.y, bottomRight.z);
+    }glEnd();
+}
+
 
 void drawCircle(double radius,int segments)
 {
     int i;
     Point points[100];
-    glColor3f(0.7,0.7,0.7);
+    //glColor3f(0.7,0.7,0.7);
     //generate points
     for(i=0;i<=segments;i++)
     {
