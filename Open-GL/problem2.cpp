@@ -82,6 +82,11 @@ public:
         region = IN_RECTANGLE;
         appeared = false;
     }
+
+    bool isColliding(Point & pointPosition, double pointRadius) {
+        double d = centerToCenterDistance(this->center, pointPosition);
+        return (d >= pointRadius + this->radius - this->radius/2.5 && d <= pointRadius + this->radius + this->radius/2.5);
+    }
 };
 
 Bubble2D * bubble2DList[TOTAL];
@@ -167,9 +172,37 @@ void handleBubblesInCircle() {
         }
     }
 }
+
+void handleCollidingBubbles() {
+    for (int i = 0; i < TOTAL; ++i) {
+        Bubble2D *temp = bubble2DList[i];
+        if (!temp->appeared || temp->region == IN_RECTANGLE) continue;
+        for (int j = 0; j < TOTAL; ++j) {
+            if (i!=j) {
+                Bubble2D * temp2 = bubble2DList[j];
+                if (temp2->region != IN_RECTANGLE) {
+                    if (temp->isColliding(temp2->center, temp2->radius)) {
+                        Point normDist = getNormalizedPoint(temp->center.subtraction(temp2->center));
+                        Point rhs = normDist.constantScale(2 * normDist.dotMultiplication(temp->vectorDir));
+                        Point component1 = temp->vectorDir.subtraction(rhs);
+                        rhs = normDist.constantScale(2 * normDist.dotMultiplication(temp2->vectorDir));
+                        Point component2 = temp2->vectorDir.subtraction(rhs);
+                        Point sumRhs = temp->vectorDir.constantScale(bubbleSpeed);
+                        temp->center = temp->center.summation(sumRhs);
+                        temp->vectorDir = getNormalizedPoint(component1);
+                        sumRhs = temp2->vectorDir.constantScale(bubbleSpeed);
+                        temp2->center = temp2->center.summation(sumRhs);
+                        temp2->vectorDir = getNormalizedPoint(component2);
+                    }
+                }
+            }
+        }
+    }
+}
 void animate(){
     handleBubblesInRectangle();
     handleBubblesInCircle();
+    handleCollidingBubbles();
     glutPostRedisplay();
 }
 
