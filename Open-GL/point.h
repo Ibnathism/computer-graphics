@@ -20,6 +20,11 @@ public:
         return {-this->x, -this->y, -this->z};
     }
 
+    double dotMultiplication(Point &temp) const {
+        double dot = this->x*temp.x + this->y*temp.y + this->z*temp.z;
+        return dot;
+    }
+
     Point summation(Point &temp) const {
         double ansX = this->x + temp.x;
         double ansY = this->y + temp.y;

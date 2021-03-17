@@ -271,3 +271,11 @@ double getMaximum(double v1, double v2, double v3, double v4) {
     max = std::max(max, v3);
     return std::max(max, v4);
 }
+
+double centerToCenterDistance(Point & p1, Point & p2) {
+    double x = p1.x - p2.x;
+    double y = p1.y - p2.y;
+    double z = p1.z - p2.z;
+    double temp = sqrt(x*x + y*y + z*z);
+    return temp;
+}

@@ -55,6 +55,9 @@ public:
 
     Circle2D(const Point &center, double radius) : center(center), radius(radius) {}
 
+    bool isInside(Point & bubbleCenter, double bubbleRadius) {
+        return centerToCenterDistance(this->center, bubbleCenter) < (this->radius - bubbleRadius);
+    }
 };
 
 class Bubble2D {
@@ -144,12 +147,29 @@ void handleBubblesInRectangle() {
         }
         else if (rectangle.pointState(toPosition) == NO_SIDE) {
             temp->center = toPosition;
+            if (circle.isInside(temp->center, temp->radius)) temp->region = IN_CIRCLE;
         }
     }
+}
 
+void handleBubblesInCircle() {
+    for (int i = 0; i < TOTAL; ++i) {
+        Bubble2D *temp = bubble2DList[i];
+        if (!temp->appeared || temp->region == IN_RECTANGLE) continue;
+        Point p = bubble2DList[i]->vectorDir.constantScale(bubbleSpeed);
+        Point toPosition = bubble2DList[i]->center.summation(p);
+        if (circle.isInside(toPosition, temp->radius)) temp->center = toPosition;
+        else {
+            Point val = getNormalizedPoint(circle.center.subtraction(toPosition));
+            Point rhs = val.constantScale(2 * val.dotMultiplication(temp->vectorDir));
+            Point ans = temp->vectorDir.subtraction(rhs);
+            temp->vectorDir = getNormalizedPoint(ans);
+        }
+    }
 }
 void animate(){
     handleBubblesInRectangle();
+    handleBubblesInCircle();
     glutPostRedisplay();
 }
 
