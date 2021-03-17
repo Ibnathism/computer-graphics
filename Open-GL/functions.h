@@ -5,9 +5,10 @@
 
 #include <GL/glut.h>
 #include <iostream>
-#include<cmath>
+#include <cmath>
 #include "point.h"
 #define pi (2*acos(0.0))
+#include <random>
 
 Point rotateOneAlongAnother(Point &toBeRotated, Point &respective, double angleOfRotation) {
     Point temp = respective.crossMultiplication(toBeRotated);
@@ -246,3 +247,15 @@ void drawSphere(double radius,int slices,int stacks)
 //    glColor3f(1,1,0);
 //    drawSquare(5);
 //}
+
+double getRandom(double a, double b) {
+    std::random_device randomDevice;
+    std::mt19937 mt19937(randomDevice());
+    std:: uniform_real_distribution<double> distribution(a, b);
+    return distribution(mt19937);
+}
+
+Point getNormalizedPoint(Point p) {
+    double temp = sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
+    return {p.x/temp, p.y/temp, p.z/temp};
+}

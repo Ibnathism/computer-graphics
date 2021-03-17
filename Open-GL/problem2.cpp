@@ -1,10 +1,14 @@
 #include <GL/glut.h>
 #include "functions.h"
 
-double circleRadius = 60;
-int rectangleWidth = 400;
-int rectangleHeight = 400;
+#define TOTAL 5
+#define IN_RECTANGLE 0
+#define IN_CIRCLE 1
 
+double circleRadius = 60;
+double bubbleRadius = 10.0;
+double rectangleWidth = 400;
+double rectangleHeight = 400;
 class Rect2D {
 public:
     Point topLeft, bottomLeft, topRight, bottomRight;
@@ -36,6 +40,31 @@ public:
 
 };
 
+class Bubble2D {
+public:
+    Point vectorDir;
+    Point center;
+    double radius;
+    int region;
+    bool appeared;
+
+    Bubble2D() {
+        vectorDir = getNormalizedPoint(Point(getRandom(-1.0, 1.0), getRandom(-1.0, 1.0), 0));
+        center = Point();
+        radius = bubbleRadius;
+        region = IN_RECTANGLE;
+        appeared = false;
+    }
+
+    Bubble2D(const Point &center) : center(center) {
+        vectorDir = getNormalizedPoint(Point(getRandom(-1.0, 1.0), getRandom(-1.0, 1.0), 0));
+        radius = bubbleRadius;
+        region = IN_CIRCLE;
+        appeared = false;
+    }
+};
+
+Bubble2D * bubble2DList[TOTAL];
 Circle2D circle;
 Rect2D rectangle;
 
@@ -76,6 +105,10 @@ void display(){
     draw2DRectangle(rectangle.topLeft, rectangle.bottomLeft, rectangle.topRight, rectangle.bottomRight);
     glColor3f(1, 0, 0);
     draw2DCircle(circle.center.x, circle.center.y, circle.radius, 80);
+    for (int i = 0; i < TOTAL; ++i) {
+        glColor3f(1.0, 1.0, 0);
+        draw2DCircle(bubble2DList[i]->center.x, bubble2DList[i]->center.y, bubble2DList[i]->radius, 80);
+    }
     glutSwapBuffers();
 }
 
@@ -92,6 +125,13 @@ void init(){
     rectangle = Rect2D(rectangleWidth, rectangleHeight);
     Point center(0, 0, 0);
     circle = Circle2D(center, circleRadius);
+
+    for (auto & i : bubble2DList) {
+        double bCenterX = rectangle.bottomLeft.x + bubbleRadius;
+        double bCenterY = rectangle.bottomLeft.y + bubbleRadius;
+        auto *temp = new Bubble2D(Point(bCenterX, bCenterY, 0));
+        i = temp;
+    }
 }
 
 int main(int argc, char **argv){
