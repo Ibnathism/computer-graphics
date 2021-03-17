@@ -4,11 +4,16 @@
 #define TOTAL 5
 #define IN_RECTANGLE 0
 #define IN_CIRCLE 1
+#define NO_SIDE 0
+#define HORIZONTAL_SIDE 1
+#define VERTICAL_SIDE 2
 
 double circleRadius = 60;
 double bubbleRadius = 10.0;
 double rectangleWidth = 400;
 double rectangleHeight = 400;
+double bubbleSpeed = 0.2;
+
 class Rect2D {
 public:
     Point topLeft, bottomLeft, topRight, bottomRight;
@@ -26,6 +31,18 @@ public:
         bottomLeft = Point(-w, -h, 0);
         topRight = Point(w, h, 0);
         bottomRight = Point(w, -h, 0);
+    }
+
+    int pointState(Point &temp) {
+        double minimumX = getMinimum(this->topLeft.x, this->bottomLeft.x, this->topRight.x, this->bottomRight.x);
+        double minimumY = getMinimum(this->topLeft.y, this->bottomLeft.y, this->topRight.y, this->bottomRight.y);
+        double maximumX = getMaximum(this->topLeft.x, this->bottomLeft.x, this->topRight.x, this->bottomRight.x);
+        double maximumY = getMaximum(this->topLeft.y, this->bottomLeft.y, this->topRight.y, this->bottomRight.y);
+        if (temp.x < minimumX) return VERTICAL_SIDE;
+        else if (temp.x > maximumX) return VERTICAL_SIDE;
+        else if (temp.y > maximumY) return HORIZONTAL_SIDE;
+        else if (temp.y < minimumY) return HORIZONTAL_SIDE;
+        else return NO_SIDE;
     }
 };
 
@@ -59,7 +76,7 @@ public:
     Bubble2D(const Point &center) : center(center) {
         vectorDir = getNormalizedPoint(Point(getRandom(-1.0, 1.0), getRandom(-1.0, 1.0), 0));
         radius = bubbleRadius;
-        region = IN_CIRCLE;
+        region = IN_RECTANGLE;
         appeared = false;
     }
 };
@@ -92,7 +109,6 @@ void specialKeyListener(int key, int x,int y){
 }
 
 
-
 void display(){
 
     clear();
@@ -106,15 +122,48 @@ void display(){
     glColor3f(1, 0, 0);
     draw2DCircle(circle.center.x, circle.center.y, circle.radius, 80);
     for (int i = 0; i < TOTAL; ++i) {
+        if (!bubble2DList[i]->appeared) continue;
         glColor3f(1.0, 1.0, 0);
         draw2DCircle(bubble2DList[i]->center.x, bubble2DList[i]->center.y, bubble2DList[i]->radius, 80);
     }
     glutSwapBuffers();
 }
 
+void handleBubblesInRectangle() {
+    for (int i = 0; i < TOTAL; ++i) {
+        Bubble2D *temp = bubble2DList[i];
+        if (!temp->appeared || temp->region == IN_CIRCLE) continue;
+        Point p = bubble2DList[i]->vectorDir.constantScale(bubbleSpeed);
+        Point toPosition = bubble2DList[i]->center.summation(p);
 
+        if(rectangle.pointState(toPosition) == HORIZONTAL_SIDE) {
+            temp->vectorDir = Point(temp->vectorDir.x, -temp->vectorDir.y, temp->vectorDir.z);
+        }
+        else if (rectangle.pointState(toPosition) == VERTICAL_SIDE) {
+            temp->vectorDir = Point(-temp->vectorDir.x, temp->vectorDir.y, temp->vectorDir.z);
+        }
+        else if (rectangle.pointState(toPosition) == NO_SIDE) {
+            temp->center = toPosition;
+        }
+    }
+
+}
 void animate(){
+    handleBubblesInRectangle();
     glutPostRedisplay();
+}
+
+
+void bringBubblesOneByOne(int x) {
+    int count = 0;
+    for (int i = 0; i < TOTAL; ++i) {
+        if (!bubble2DList[i]->appeared) {
+            bubble2DList[i]->appeared = true;
+            count++;
+            break;
+        }
+    }
+    if (count<TOTAL) glutTimerFunc(1000, bringBubblesOneByOne, x);
 }
 
 void init(){
@@ -126,12 +175,14 @@ void init(){
     Point center(0, 0, 0);
     circle = Circle2D(center, circleRadius);
 
-    for (auto & i : bubble2DList) {
+    for (int i = 0; i < TOTAL; ++i) {
         double bCenterX = rectangle.bottomLeft.x + bubbleRadius;
         double bCenterY = rectangle.bottomLeft.y + bubbleRadius;
-        auto *temp = new Bubble2D(Point(bCenterX, bCenterY, 0));
-        i = temp;
+        Bubble2D *temp = new Bubble2D(Point(bCenterX, bCenterY, 0));
+        bubble2DList[i] = temp;
     }
+
+    bringBubblesOneByOne(0);
 }
 
 int main(int argc, char **argv){

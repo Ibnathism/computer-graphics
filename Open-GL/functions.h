@@ -259,3 +259,15 @@ Point getNormalizedPoint(Point p) {
     double temp = sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
     return {p.x/temp, p.y/temp, p.z/temp};
 }
+
+double getMinimum(double v1, double v2, double v3, double v4) {
+    double min = std::min(v1, v2);
+    min = std::min(min, v3);
+    return std::min(min, v4);
+}
+
+double getMaximum(double v1, double v2, double v3, double v4) {
+    double max = std::max(v1, v2);
+    max = std::max(max, v3);
+    return std::max(max, v4);
+}
