@@ -10,9 +10,10 @@
 
 double circleRadius = 60;
 double bubbleRadius = 10.0;
-double rectangleWidth = 400;
-double rectangleHeight = 400;
+double rectangleWidth = 500;
+double rectangleHeight = 500;
 double bubbleSpeed = 0.2;
+double initOffset = 5.0;
 
 class Rect2D {
 public:
@@ -25,8 +26,8 @@ public:
         bottomRight = Point();
     }
     Rect2D(double width, double height){
-        double w = width/4.0;
-        double h = height/4.0;
+        double w = width/5.0;
+        double h = height/5.0;
         topLeft = Point(-w, h, 0);
         bottomLeft = Point(-w, -h, 0);
         topRight = Point(w, h, 0);
@@ -125,10 +126,10 @@ void display(){
 
     gluLookAt(0, 0, 150, 0, 0, 0, 0, 1, 0);
     glMatrixMode(GL_MODELVIEW);
-    glColor3f(0, 1, 0);
-    draw2DRectangle(rectangle.topLeft, rectangle.bottomLeft, rectangle.topRight, rectangle.bottomRight);
     glColor3f(1, 0, 0);
     draw2DCircle(circle.center.x, circle.center.y, circle.radius, 80);
+    glColor3f(0, 1, 0);
+    draw2DRectangle(rectangle.topLeft, rectangle.bottomLeft, rectangle.topRight, rectangle.bottomRight);
     for (int i = 0; i < TOTAL; ++i) {
         if (!bubble2DList[i]->appeared) continue;
         glColor3f(1.0, 1.0, 0);
@@ -210,13 +211,14 @@ void animate(){
 void bringBubblesOneByOne(int x) {
     int count = 0;
     for (int i = 0; i < TOTAL; ++i) {
-        if (!bubble2DList[i]->appeared) {
-            bubble2DList[i]->appeared = true;
+        if (bubble2DList[i]->appeared) continue;
+        else {
             count++;
+            bubble2DList[i]->appeared = true;
             break;
         }
     }
-    if (count<TOTAL) glutTimerFunc(1000, bringBubblesOneByOne, x);
+    if (count<TOTAL) glutTimerFunc(5000, bringBubblesOneByOne, x);
 }
 
 void init(){
@@ -229,8 +231,8 @@ void init(){
     circle = Circle2D(center, circleRadius);
 
     for (int i = 0; i < TOTAL; ++i) {
-        double bCenterX = rectangle.bottomLeft.x + bubbleRadius;
-        double bCenterY = rectangle.bottomLeft.y + bubbleRadius;
+        double bCenterX = rectangle.bottomLeft.x + bubbleRadius + initOffset;
+        double bCenterY = rectangle.bottomLeft.y + bubbleRadius + initOffset;
         Bubble2D *temp = new Bubble2D(Point(bCenterX, bCenterY, 0));
         bubble2DList[i] = temp;
     }
