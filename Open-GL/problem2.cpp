@@ -14,6 +14,7 @@ double rectangleWidth = 500;
 double rectangleHeight = 500;
 double bubbleSpeed = 0.2;
 double initOffset = 5.0;
+double offset = 11.0;
 
 class Rect2D {
 public:
@@ -39,10 +40,10 @@ public:
         double minimumY = getMinimum(this->topLeft.y, this->bottomLeft.y, this->topRight.y, this->bottomRight.y);
         double maximumX = getMaximum(this->topLeft.x, this->bottomLeft.x, this->topRight.x, this->bottomRight.x);
         double maximumY = getMaximum(this->topLeft.y, this->bottomLeft.y, this->topRight.y, this->bottomRight.y);
-        if (temp.x < minimumX) return VERTICAL_SIDE;
-        else if (temp.x > maximumX) return VERTICAL_SIDE;
-        else if (temp.y > maximumY) return HORIZONTAL_SIDE;
-        else if (temp.y < minimumY) return HORIZONTAL_SIDE;
+        if (temp.x-offset < minimumX) return VERTICAL_SIDE;
+        else if (temp.x+offset > maximumX) return VERTICAL_SIDE;
+        else if (temp.y+offset > maximumY) return HORIZONTAL_SIDE;
+        else if (temp.y-offset < minimumY) return HORIZONTAL_SIDE;
         else return NO_SIDE;
     }
 };
@@ -56,8 +57,8 @@ public:
 
     Circle2D(const Point &center, double radius) : center(center), radius(radius) {}
 
-    bool isInside(Point & bubbleCenter, double bubbleRadius) {
-        return centerToCenterDistance(this->center, bubbleCenter) < (this->radius - bubbleRadius);
+    bool isInside(Point & bubbleCenter, double r) {
+        return centerToCenterDistance(this->center, bubbleCenter) < (this->radius - r);
     }
 };
 
@@ -119,7 +120,6 @@ void specialKeyListener(int key, int x,int y){
 
 
 void display(){
-
     clear();
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -138,40 +138,9 @@ void display(){
     glutSwapBuffers();
 }
 
-void handleBubblesInRectangle() {
-    for (int i = 0; i < TOTAL; ++i) {
-        Bubble2D *temp = bubble2DList[i];
-        if (!temp->appeared || temp->region == IN_CIRCLE) continue;
-        Point p = bubble2DList[i]->vectorDir.constantScale(bubbleSpeed);
-        Point toPosition = bubble2DList[i]->center.summation(p);
-
-        if(rectangle.pointState(toPosition) == HORIZONTAL_SIDE) {
-            temp->vectorDir = Point(temp->vectorDir.x, -temp->vectorDir.y, temp->vectorDir.z);
-        }
-        else if (rectangle.pointState(toPosition) == VERTICAL_SIDE) {
-            temp->vectorDir = Point(-temp->vectorDir.x, temp->vectorDir.y, temp->vectorDir.z);
-        }
-        else if (rectangle.pointState(toPosition) == NO_SIDE) {
-            temp->center = toPosition;
-            if (circle.isInside(temp->center, temp->radius)) temp->region = IN_CIRCLE;
-        }
-    }
-}
 
 void handleBubblesInCircle() {
-    for (int i = 0; i < TOTAL; ++i) {
-        Bubble2D *temp = bubble2DList[i];
-        if (!temp->appeared || temp->region == IN_RECTANGLE) continue;
-        Point p = bubble2DList[i]->vectorDir.constantScale(bubbleSpeed);
-        Point toPosition = bubble2DList[i]->center.summation(p);
-        if (circle.isInside(toPosition, temp->radius)) temp->center = toPosition;
-        else {
-            Point val = getNormalizedPoint(circle.center.subtraction(toPosition));
-            Point rhs = val.constantScale(2 * val.dotMultiplication(temp->vectorDir));
-            Point ans = temp->vectorDir.subtraction(rhs);
-            temp->vectorDir = getNormalizedPoint(ans);
-        }
-    }
+
 }
 
 void handleCollidingBubbles() {
@@ -201,8 +170,37 @@ void handleCollidingBubbles() {
     }
 }
 void animate(){
-    handleBubblesInRectangle();
-    handleBubblesInCircle();
+
+    for (int i = 0; i < TOTAL; ++i) {
+        Bubble2D *temp = bubble2DList[i];
+        if (temp->appeared && temp->region != IN_CIRCLE) {
+            Point p = bubble2DList[i]->vectorDir.constantScale(bubbleSpeed);
+            Point toPosition = bubble2DList[i]->center.summation(p);
+
+            if (rectangle.pointState(toPosition) == HORIZONTAL_SIDE) {
+                temp->vectorDir = Point(temp->vectorDir.x, -temp->vectorDir.y, temp->vectorDir.z);
+            } else if (rectangle.pointState(toPosition) == VERTICAL_SIDE) {
+                temp->vectorDir = Point(-temp->vectorDir.x, temp->vectorDir.y, temp->vectorDir.z);
+            } else if (rectangle.pointState(toPosition) == NO_SIDE) {
+                temp->center = toPosition;
+                if (circle.isInside(temp->center, temp->radius)) temp->region = IN_CIRCLE;
+            }
+        }
+    }
+    for (int i = 0; i < TOTAL; ++i) {
+        Bubble2D *temp = bubble2DList[i];
+        if (temp->appeared && temp->region != IN_RECTANGLE) {
+            Point p = bubble2DList[i]->vectorDir.constantScale(bubbleSpeed);
+            Point toPosition = bubble2DList[i]->center.summation(p);
+
+            if (circle.isInside(toPosition, temp->radius)) temp->center = toPosition;
+            else {
+                Point norm = getNormalizedPoint(circle.center.subtraction(toPosition));
+                Point scaled = norm.constantScale(2 * norm.dotMultiplication(temp->vectorDir));
+                temp->vectorDir = getNormalizedPoint(temp->vectorDir.subtraction(scaled));
+            }
+        }
+    }
     handleCollidingBubbles();
     glutPostRedisplay();
 }
