@@ -12,9 +12,12 @@ double circleRadius = 60;
 double bubbleRadius = 10.0;
 double rectangleWidth = 500;
 double rectangleHeight = 500;
-double bubbleSpeed = 0.2;
+double bubbleSpeed = 0.15;
+double bubbleMaxSpeed = 0.8;
+double bubbleMinSpeed = 0.05;
 double initOffset = 5.0;
 double offset = 11.0;
+bool isPlay = true;
 
 class Rect2D {
 public:
@@ -85,9 +88,11 @@ public:
         appeared = false;
     }
 
-    bool isColliding(Point & pointPosition, double pointRadius) {
+    bool isColliding(Point & pointPosition) {
         double d = centerToCenterDistance(this->center, pointPosition);
-        return (d >= pointRadius + this->radius - this->radius/2.5 && d <= pointRadius + this->radius + this->radius/2.5);
+        bool minCondition = d >= 2 * this->radius - this->radius/initOffset;
+        bool maxCondition = d <= 2 * this->radius + this->radius/initOffset;
+        return minCondition && maxCondition;
     }
 };
 
@@ -98,6 +103,8 @@ Rect2D rectangle;
 void keyboardListener(unsigned char key, int x,int y){
     switch(key){
         case 'p':
+            if (isPlay) isPlay = false;
+            else isPlay = true;
             break;
         default:
             break;
@@ -108,10 +115,12 @@ void keyboardListener(unsigned char key, int x,int y){
 void specialKeyListener(int key, int x,int y){
     switch(key){
         case GLUT_KEY_DOWN:
-
+            if (bubbleSpeed - 0.02 > bubbleMinSpeed) bubbleSpeed = bubbleSpeed - 0.02;
+            else bubbleSpeed = bubbleMinSpeed;
             break;
         case GLUT_KEY_UP:
-
+            if (bubbleSpeed + 0.02 < bubbleMaxSpeed) bubbleSpeed = bubbleSpeed + 0.02;
+            else bubbleSpeed = bubbleMaxSpeed;
             break;
         default:
             break;
@@ -138,70 +147,69 @@ void display(){
     glutSwapBuffers();
 }
 
+void animate(){
 
-void handleBubblesInCircle() {
-
-}
-
-void handleCollidingBubbles() {
     for (int i = 0; i < TOTAL; ++i) {
         Bubble2D *temp = bubble2DList[i];
-        if (!temp->appeared || temp->region == IN_RECTANGLE) continue;
-        for (int j = 0; j < TOTAL; ++j) {
-            if (i!=j) {
-                Bubble2D * temp2 = bubble2DList[j];
-                if (temp2->region != IN_RECTANGLE) {
-                    if (temp->isColliding(temp2->center, temp2->radius)) {
-                        Point normDist = getNormalizedPoint(temp->center.subtraction(temp2->center));
-                        Point rhs = normDist.constantScale(2 * normDist.dotMultiplication(temp->vectorDir));
-                        Point component1 = temp->vectorDir.subtraction(rhs);
-                        rhs = normDist.constantScale(2 * normDist.dotMultiplication(temp2->vectorDir));
-                        Point component2 = temp2->vectorDir.subtraction(rhs);
-                        Point sumRhs = temp->vectorDir.constantScale(bubbleSpeed);
-                        temp->center = temp->center.summation(sumRhs);
-                        temp->vectorDir = getNormalizedPoint(component1);
-                        sumRhs = temp2->vectorDir.constantScale(bubbleSpeed);
-                        temp2->center = temp2->center.summation(sumRhs);
-                        temp2->vectorDir = getNormalizedPoint(component2);
+        if (isPlay) {
+            if (temp->appeared && temp->region != IN_CIRCLE) {
+                Point p = bubble2DList[i]->vectorDir.constantScale(bubbleSpeed);
+                Point toPosition = bubble2DList[i]->center.summation(p);
+
+                if (rectangle.pointState(toPosition) == HORIZONTAL_SIDE) {
+                    temp->vectorDir = Point(temp->vectorDir.x, -temp->vectorDir.y, temp->vectorDir.z);
+                } else if (rectangle.pointState(toPosition) == VERTICAL_SIDE) {
+                    temp->vectorDir = Point(-temp->vectorDir.x, temp->vectorDir.y, temp->vectorDir.z);
+                } else if (rectangle.pointState(toPosition) == NO_SIDE) {
+                    temp->center = toPosition;
+                    if (circle.isInside(temp->center, temp->radius)) temp->region = IN_CIRCLE;
+                }
+            }
+        }
+    }
+    for (int i = 0; i < TOTAL; ++i) {
+        Bubble2D *temp = bubble2DList[i];
+        if (isPlay) {
+            if (temp->appeared && temp->region != IN_RECTANGLE) {
+                Point p = bubble2DList[i]->vectorDir.constantScale(bubbleSpeed);
+                Point toPosition = bubble2DList[i]->center.summation(p);
+
+                if (circle.isInside(toPosition, temp->radius)) temp->center = toPosition;
+                else {
+                    Point norm = getNormalizedPoint(circle.center.subtraction(toPosition));
+                    Point scaled = norm.constantScale(2 * norm.dotMultiplication(temp->vectorDir));
+                    temp->vectorDir = getNormalizedPoint(temp->vectorDir.subtraction(scaled));
+                }
+            }
+        }
+    }
+    for (int i = 0; i < TOTAL; ++i) {
+        Bubble2D *temp = bubble2DList[i];
+        if (isPlay) {
+            if (temp->appeared && temp->region != IN_RECTANGLE) {
+                for (int j = 0; j < TOTAL; ++j) {
+                    if (i != j) {
+                        Bubble2D *other = bubble2DList[j];
+                        if (other->region != IN_RECTANGLE) {
+                            if (temp->isColliding(other->center)) {
+                                Point norm = getNormalizedPoint(temp->center.subtraction(other->center));
+
+                                Point scaled = norm.constantScale(2 * norm.dotMultiplication(temp->vectorDir));
+                                temp->vectorDir = getNormalizedPoint(temp->vectorDir.subtraction(scaled));
+                                Point centerOffset = temp->vectorDir.constantScale(bubbleSpeed);
+                                temp->center = temp->center.summation(centerOffset);
+
+                                scaled = norm.constantScale(2 * norm.dotMultiplication(other->vectorDir));
+                                other->vectorDir = getNormalizedPoint(other->vectorDir.subtraction(scaled));
+                                centerOffset = other->vectorDir.constantScale(bubbleSpeed);
+                                other->center = other->center.summation(centerOffset);
+                            }
+                        }
                     }
                 }
             }
         }
     }
-}
-void animate(){
-
-    for (int i = 0; i < TOTAL; ++i) {
-        Bubble2D *temp = bubble2DList[i];
-        if (temp->appeared && temp->region != IN_CIRCLE) {
-            Point p = bubble2DList[i]->vectorDir.constantScale(bubbleSpeed);
-            Point toPosition = bubble2DList[i]->center.summation(p);
-
-            if (rectangle.pointState(toPosition) == HORIZONTAL_SIDE) {
-                temp->vectorDir = Point(temp->vectorDir.x, -temp->vectorDir.y, temp->vectorDir.z);
-            } else if (rectangle.pointState(toPosition) == VERTICAL_SIDE) {
-                temp->vectorDir = Point(-temp->vectorDir.x, temp->vectorDir.y, temp->vectorDir.z);
-            } else if (rectangle.pointState(toPosition) == NO_SIDE) {
-                temp->center = toPosition;
-                if (circle.isInside(temp->center, temp->radius)) temp->region = IN_CIRCLE;
-            }
-        }
-    }
-    for (int i = 0; i < TOTAL; ++i) {
-        Bubble2D *temp = bubble2DList[i];
-        if (temp->appeared && temp->region != IN_RECTANGLE) {
-            Point p = bubble2DList[i]->vectorDir.constantScale(bubbleSpeed);
-            Point toPosition = bubble2DList[i]->center.summation(p);
-
-            if (circle.isInside(toPosition, temp->radius)) temp->center = toPosition;
-            else {
-                Point norm = getNormalizedPoint(circle.center.subtraction(toPosition));
-                Point scaled = norm.constantScale(2 * norm.dotMultiplication(temp->vectorDir));
-                temp->vectorDir = getNormalizedPoint(temp->vectorDir.subtraction(scaled));
-            }
-        }
-    }
-    handleCollidingBubbles();
     glutPostRedisplay();
 }
 
@@ -216,7 +224,7 @@ void bringBubblesOneByOne(int x) {
             break;
         }
     }
-    if (count<TOTAL) glutTimerFunc(5000, bringBubblesOneByOne, x);
+    if (count<TOTAL) glutTimerFunc(10000, bringBubblesOneByOne, x);
 }
 
 void init(){
