@@ -120,7 +120,7 @@ void display(){
     //drawGunBody(80, 6, 50, 200);
     //drawGunHead(80, 9, 1.2, 50, 200);
 
-    drawGun(18, 80, 6);
+    drawGun(18, 80, 6, 9, 1.2);
     glutSwapBuffers();
 }
 
