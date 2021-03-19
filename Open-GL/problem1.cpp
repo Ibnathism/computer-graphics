@@ -1,7 +1,6 @@
 #include <GL/glut.h>
 #include "functions.h"
 
-int drawaxes;
 
 class Cam {
 public:
@@ -87,7 +86,7 @@ void mouseListener(int button, int state, int x, int y){	//x, y is the x-y of th
     switch(button){
         case GLUT_LEFT_BUTTON:
             if(state == GLUT_DOWN){		// 2 times?? in ONE click? -- solution is checking DOWN or UP
-                drawaxes=1-drawaxes;
+
             }
             break;
 
@@ -115,9 +114,11 @@ void display(){
     double tempZ = myCamera.position.z;
     gluLookAt(tempX, tempY, tempZ, tempX+myCamera.lookDir.x, tempY+myCamera.lookDir.y, tempZ+myCamera.lookDir.z, myCamera.upDir.x, myCamera.upDir.y, myCamera.upDir.z);
     glMatrixMode(GL_MODELVIEW);
+    glColor3f(1, 1, 1);
     drawAxes();
-    glColor3f(1,0,0);
-    drawSphere(30,24,20);
+    drawGunHandle(18,50,200);
+    drawGunBody(80, 6, 50, 200);
+    drawGunHead(80, 9, 1.2, 50, 200);
     glutSwapBuffers();
 }
 

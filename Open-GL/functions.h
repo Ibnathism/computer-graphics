@@ -7,8 +7,28 @@
 #include <iostream>
 #include <cmath>
 #include "point.h"
-#define pi (2*acos(0.0))
 #include <random>
+
+#define pi (2*acos(0.0))
+#define GUN_HANDLE 0
+#define GUN_BODY 1
+#define GUN_HEAD 2
+
+Point axisQW(0, 1, 0);
+double angleQW = 15;
+Point axisER(1, 0, 0);
+double angleER = 20;
+Point axisAS(1, 0, 0);
+double angleAS = 15;
+Point axisDF(0, 0, 0);
+double angleDF = 45;
+
+class Gun {
+public:
+    Point gunCenter = Point(0, 0, 0);
+};
+
+
 
 Point rotateOneAlongAnother(Point &toBeRotated, Point &respective, double angleOfRotation) {
     Point temp = respective.crossMultiplication(toBeRotated);
@@ -59,8 +79,7 @@ void drawGrid() {
     }glEnd();
 }
 
-void drawSquare(double a)
-{
+void drawSquare(double a) {
     glBegin(GL_QUADS);{
         glVertex3f( a, a,2);
         glVertex3f( a,-a,2);
@@ -144,8 +163,8 @@ void drawCone(double radius,double height,int segments){
     }
 }
 
-void drawSphere(double radius,int slices,int stacks) {
-    Point points[100][100];
+void drawGunHandle(double radius,int slices,int stacks) {
+    Point points[stacks+1][slices+1];
     int i,j;
     double h,r;
     for(i=0;i<=stacks;i++) {
@@ -155,12 +174,24 @@ void drawSphere(double radius,int slices,int stacks) {
             points[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
             points[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
             points[i][j].z=h;
+
+            //points[i][j] = rotateOneAlongAnother(points[i][j], axisQW, angleQW);
+            //points[i][j] = rotateOneAlongAnother(points[i][j], axisER, angleER);
+
         }
     }
+    bool isWhite = false;
     for(i=0;i<stacks;i++) {
-        glColor3f((double)i/(double)stacks,(double)i/(double)stacks,(double)i/(double)stacks);
         for(j=0;j<slices;j++) {
             glBegin(GL_QUADS);{
+                if (isWhite) {
+                    glColor3f(1, 1, 1);
+                    isWhite = false;
+                }
+                else {
+                    glColor3f(0, 0, 0);
+                    isWhite = true;
+                }
                 glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
                 glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
                 glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
@@ -170,6 +201,102 @@ void drawSphere(double radius,int slices,int stacks) {
                 glVertex3f(points[i][j+1].x,points[i][j+1].y,-points[i][j+1].z);
                 glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,-points[i+1][j+1].z);
                 glVertex3f(points[i+1][j].x,points[i+1][j].y,-points[i+1][j].z);
+            }glEnd();
+        }
+    }
+}
+
+void drawGunBody(double height, double radius,int slices,int stacks) {
+    Point points[stacks+1][slices+1];
+    int i,j;
+    double h,r;
+    for(i=0;i<=stacks;i++) {
+        h=height*sin(((double)i/(double)stacks)*(pi/2));
+        r=radius;
+        for(j=0;j<=slices;j++) {
+            int joint = (int) (0.2 * stacks);
+            if (i > joint) {
+                points[i][j].x=r*cos(angleDF + ((double)j/(double)slices)*2*pi);
+                points[i][j].y=r*sin(angleDF + ((double)j/(double)slices)*2*pi);
+                points[i][j].z=h;
+
+//                points[i][j] = rotateOneAlongAnother(points[i][j], axisQW, angleQW);
+//                points[i][j] = rotateOneAlongAnother(points[i][j], axisAS, angleAS);
+//                points[i][j] = rotateOneAlongAnother(points[i][j], axisER, angleER);
+            } else {
+                double angleOnJoint = (double)i/(double)joint;
+                r = radius * cos(angleOnJoint * (pi/2));
+                h = (height*0.2) * sin( angleOnJoint * (pi/2));
+
+                points[i][j].x=r*cos(angleDF + ((double)j/(double)slices)*2*pi);
+                points[i][j].y=r*sin(angleDF + ((double)j/(double)slices)*2*pi);
+                points[i][j].z=h;
+
+//                Point temp(0, 0, 1);
+//                Point addMore(0, 0, height*0.2*2);
+//                points[i][j] = (rotateOneAlongAnother(points[i][j], temp, 180)).summation(addMore);
+//                points[i][j] = rotateOneAlongAnother(points[i][j], axisQW, angleQW);
+//                points[i][j] = rotateOneAlongAnother(points[i][j], axisAS, angleAS);
+//                points[i][j] = rotateOneAlongAnother(points[i][j], axisER, angleER);
+            }
+        }
+    }
+
+    bool isWhite = false;
+    for(i=0;i<stacks;i++) {
+        for(j=0;j<slices;j++) {
+            glBegin(GL_QUADS);{
+                if (isWhite) {
+                    glColor3f(1, 1, 1);
+                    isWhite = false;
+                }
+                else {
+                    glColor3f(0, 0, 0);
+                    isWhite = true;
+                }
+                glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
+                glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
+                glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
+                glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
+            }glEnd();
+        }
+    }
+}
+
+void drawGunHead(double height, double radius, double headOffset, int slices,int stacks) {
+    Point points[stacks+1][slices+1];
+    int i,j;
+    double h,r;
+    for(i=0;i<=stacks;i++) {
+        h=height*sin(((double)i/(double)stacks)*(pi/2));
+        r=radius - radius*cos(((double)i/(double)stacks)*(pi/2)) + headOffset;
+        for(j=0;j<=slices;j++) {
+            points[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
+            points[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
+            points[i][j].z=h;
+
+            //points[i][j] = rotateOneAlongAnother(points[i][j], axisQW, angleQW);
+            //points[i][j] = rotateOneAlongAnother(points[i][j], axisAS, angleAS);
+            //points[i][j] = rotateOneAlongAnother(points[i][j], axisER, angleER);
+
+        }
+    }
+    bool isWhite = false;
+    for(i=0;i<stacks;i++) {
+        for(j=0;j<slices;j++) {
+            glBegin(GL_QUADS);{
+                if (isWhite) {
+                    glColor3f(1, 1, 1);
+                    isWhite = false;
+                }
+                else {
+                    glColor3f(0, 0, 0);
+                    isWhite = true;
+                }
+                if (points[i][j].z >= height*0.2) glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
+                if (points[i][j+1].z >= height*0.2) glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
+                if (points[i+1][j+1].z >= height*0.2) glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
+                if (points[i+1][j].z >= height*0.2) glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
             }glEnd();
         }
     }
