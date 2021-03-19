@@ -50,6 +50,29 @@ void keyboardListener(unsigned char key, int x,int y){
             myCamera.rightDir = rotateOneAlongAnother(myCamera.rightDir, myCamera.lookDir, positiveAngle);
             myCamera.upDir = myCamera.rightDir.crossMultiplication(myCamera.lookDir);
             break;
+        case 'q':
+            applyQRotation();
+            break;
+        case 'w':
+            applyWRotation();
+            break;
+        case 'e':
+            applyERotation();
+            break;
+        case 'r':
+            applyRRotation();
+            break;
+        case 'a':
+            applyARotation();
+            break;
+        case 's':
+            applySRotation();
+        case 'd':
+            applyDRotation();
+            break;
+        case 'f':
+            applyFRotation();
+            break;
         default:
             break;
     }
@@ -116,10 +139,6 @@ void display(){
     glMatrixMode(GL_MODELVIEW);
     glColor3f(1, 1, 1);
     drawAxes();
-    //drawGunHandle(18,50,200);
-    //drawGunBody(80, 6, 50, 200);
-    //drawGunHead(80, 9, 1.2, 50, 200);
-
     drawGun(18, 80, 6, 9, 1.2);
     glutSwapBuffers();
 }

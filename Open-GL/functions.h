@@ -20,29 +20,12 @@ double angleAS = 15;
 Point axisDF(0, 0, 0);
 double angleDF = 45;
 
-class Gun {
-public:
-    Point gunCenter = Point(0, 0, 0);
-};
-
-
-
-Point rotateOneAlongAnother(Point &toBeRotated, Point &respective, double angleOfRotation) {
-    Point temp = respective.crossMultiplication(toBeRotated);
-    double angleInRadian = angleOfRotation*pi / 180.0;
-    Point component1 = toBeRotated.constantScale(cos(angleInRadian));
-    Point component2 = temp.constantScale(sin(angleInRadian));
-    Point answer = component1.summation(component2);
-    return answer;
-}
-
 
 void clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0,0,0,0);	//color black
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
-
 
 void drawAxes() {
     glBegin(GL_LINES);{
@@ -76,15 +59,6 @@ void drawGrid() {
     }glEnd();
 }
 
-void drawSquare(double a) {
-    glBegin(GL_QUADS);{
-        glVertex3f( a, a,2);
-        glVertex3f( a,-a,2);
-        glVertex3f(-a,-a,2);
-        glVertex3f(-a, a,2);
-    }glEnd();
-}
-
 void draw2DRectangle(Point topLeft, Point bottomLeft, Point topRight, Point bottomRight) {
     glBegin(GL_LINES);{
         //Left Side
@@ -100,22 +74,6 @@ void draw2DRectangle(Point topLeft, Point bottomLeft, Point topRight, Point bott
         glVertex3f(bottomLeft.x, bottomLeft.y, bottomLeft.z);
         glVertex3f(bottomRight.x, bottomRight.y, bottomRight.z);
     }glEnd();
-}
-
-
-void drawCircle(double radius,int segments) {
-    int i;
-    Point points[100];
-    for(i=0;i<=segments;i++) {
-        points[i].x=radius*cos(((double)i/(double)segments)*2*pi);
-        points[i].y=radius*sin(((double)i/(double)segments)*2*pi);
-    }
-    for(i=0;i<segments;i++) {
-        glBegin(GL_LINES);{
-            glVertex3f(points[i].x,points[i].y,0);
-            glVertex3f(points[i+1].x,points[i+1].y,0);
-        }glEnd();
-    }
 }
 
 void draw2DCircle(double centerX, double centerY, double radius,int segments) {
@@ -137,6 +95,81 @@ void draw2DCircle(double centerX, double centerY, double radius,int segments) {
     }
 }
 
+
+
+double getRandom(double a, double b) {
+    std::random_device randomDevice;
+    std::mt19937 mt19937(randomDevice());
+    std:: uniform_real_distribution<double> distribution(a, b);
+    return distribution(mt19937);
+}
+
+Point getNormalizedPoint(Point p) {
+    double temp = sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
+    return {p.x/temp, p.y/temp, p.z/temp};
+}
+
+double getMinimum(double v1, double v2, double v3, double v4) {
+    double min = std::min(v1, v2);
+    min = std::min(min, v3);
+    return std::min(min, v4);
+}
+
+double getMaximum(double v1, double v2, double v3, double v4) {
+    double max = std::max(v1, v2);
+    max = std::max(max, v3);
+    return std::max(max, v4);
+}
+
+double centerToCenterDistance(Point & p1, Point & p2) {
+    double x = p1.x - p2.x;
+    double y = p1.y - p2.y;
+    double z = p1.z - p2.z;
+    double temp = sqrt(x*x + y*y + z*z);
+    return temp;
+}
+
+Point rotateOneAlongAnother(Point &toBeRotated, Point &respective, double angleOfRotation) {
+    Point temp = respective.crossMultiplication(toBeRotated);
+    double angleInRadian = angleOfRotation*pi / 180.0;
+    Point component1 = toBeRotated.constantScale(cos(angleInRadian));
+    Point component2 = temp.constantScale(sin(angleInRadian));
+    Point answer = component1.summation(component2);
+    return answer;
+}
+
+void applyQRotation() {
+    angleQW = angleQW + 1.0;
+}
+
+void applyWRotation() {
+    angleQW = angleQW - 1.0;
+}
+
+void applyERotation() {
+    angleER = angleER + 1.0;
+}
+
+void applyRRotation() {
+    angleER = angleER - 1.0;
+}
+
+void applyARotation() {
+    angleAS = angleAS + 1.0;
+}
+
+void applySRotation() {
+    angleAS = angleAS - 1.0;
+}
+
+void applyDRotation() {
+    angleDF = angleDF + 1.0;
+}
+
+void applyFRotation() {
+    angleDF = angleDF - 1.0;
+}
+
 void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double headRadius, double headOffset) {
 
     int slices = 50;
@@ -152,8 +185,8 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double h
             handlePoints[i][j].y = handleR * sin(((double)j/(double)slices)*2*pi);
             handlePoints[i][j].z = handleH;
 
-            //handlePoints[i][j] = rotateOneAlongAnother(handlePoints[i][j], axisQW, angleQW);
-            //handlePoints[i][j] = rotateOneAlongAnother(handlePoints[i][j], axisER, angleER);
+            handlePoints[i][j] = rotateOneAlongAnother(handlePoints[i][j], axisQW, angleQW);
+            handlePoints[i][j] = rotateOneAlongAnother(handlePoints[i][j], axisER, angleER);
 
         }
     }
@@ -194,9 +227,9 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double h
                 bodyPoints[i][j].y = bodyR*sin(angleDF + ((double)j/(double)slices)*2*pi);
                 bodyPoints[i][j].z = bodyH;
 
-//                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisQW, angleQW);
-//                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisAS, angleAS);
-//                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisER, angleER);
+                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisQW, angleQW);
+                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisAS, angleAS);
+                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisER, angleER);
             } else {
                 double angleOnJoint = (double)i/(double)joint;
                 bodyR = bodyRadius * cos(angleOnJoint * (pi/2));
@@ -206,12 +239,12 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double h
                 bodyPoints[i][j].y = bodyR*sin(angleDF + ((double)j/(double)slices)*2*pi);
                 bodyPoints[i][j].z = bodyH;
 
-//                Point temp(0, 0, 1);
-//                Point addMore(0, 0, height*0.2*2);
-//                bodyPoints[i][j] = (rotateOneAlongAnother(bodyPoints[i][j], temp, 180)).summation(addMore);
-//                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisQW, angleQW);
-//                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisAS, angleAS);
-//                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisER, angleER);
+                Point temp(0, 0, 1);
+                Point addMore(0, 0, bodyHeight*0.2*2);
+                bodyPoints[i][j] = (rotateOneAlongAnother(bodyPoints[i][j], temp, 180)).summation(addMore);
+                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisQW, angleQW);
+                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisAS, angleAS);
+                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisER, angleER);
             }
         }
     }
@@ -245,10 +278,9 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double h
             headPoints[i][j].y = headR*sin(((double)j/(double)slices)*2*pi);
             headPoints[i][j].z = headH;
 
-            //headPoints[i][j] = rotateOneAlongAnother(headPoints[i][j], axisQW, angleQW);
-            //headPoints[i][j] = rotateOneAlongAnother(headPoints[i][j], axisAS, angleAS);
-            //headPoints[i][j] = rotateOneAlongAnother(headPoints[i][j], axisER, angleER);
-
+            headPoints[i][j] = rotateOneAlongAnother(headPoints[i][j], axisQW, angleQW);
+            headPoints[i][j] = rotateOneAlongAnother(headPoints[i][j], axisAS, angleAS);
+            headPoints[i][j] = rotateOneAlongAnother(headPoints[i][j], axisER, angleER);
         }
     }
     isWhite = false;
@@ -275,37 +307,4 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double h
             }glEnd();
         }
     }
-}
-
-
-double getRandom(double a, double b) {
-    std::random_device randomDevice;
-    std::mt19937 mt19937(randomDevice());
-    std:: uniform_real_distribution<double> distribution(a, b);
-    return distribution(mt19937);
-}
-
-Point getNormalizedPoint(Point p) {
-    double temp = sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
-    return {p.x/temp, p.y/temp, p.z/temp};
-}
-
-double getMinimum(double v1, double v2, double v3, double v4) {
-    double min = std::min(v1, v2);
-    min = std::min(min, v3);
-    return std::min(min, v4);
-}
-
-double getMaximum(double v1, double v2, double v3, double v4) {
-    double max = std::max(v1, v2);
-    max = std::max(max, v3);
-    return std::max(max, v4);
-}
-
-double centerToCenterDistance(Point & p1, Point & p2) {
-    double x = p1.x - p2.x;
-    double y = p1.y - p2.y;
-    double z = p1.z - p2.z;
-    double temp = sqrt(x*x + y*y + z*z);
-    return temp;
 }
