@@ -274,8 +274,8 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double h
         headH = bodyHeight*sin(((double)i/(double)stacks)*(pi/2));
         headR = headRadius - headRadius*cos(((double)i/(double)stacks)*(pi/2)) + headOffset;
         for(int j=0;j<=slices;j++) {
-            headPoints[i][j].x = headR*cos(((double)j/(double)slices)*2*pi);
-            headPoints[i][j].y = headR*sin(((double)j/(double)slices)*2*pi);
+            headPoints[i][j].x = headR*cos(angleDF + ((double)j/(double)slices)*2*pi);
+            headPoints[i][j].y = headR*sin(angleDF + ((double)j/(double)slices)*2*pi);
             headPoints[i][j].z = headH;
 
             headPoints[i][j] = rotateOneAlongAnother(headPoints[i][j], axisQW, angleQW);
