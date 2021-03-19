@@ -307,6 +307,52 @@ void drawGunHead(double height, double radius, double headOffset, int slices,int
     }
 }
 
+void drawGun(double handleRadius, double bodyHeight, double bodyRadius) {
+    int slices = 50;
+    int stacks = 200;
+    Point handlePoints[stacks+1][slices+1];
+    int i,j;
+    double h,r;
+    for(i=0;i<=stacks;i++) {
+        h=handleRadius*sin(((double)i/(double)stacks)*(pi/2));
+        r=handleRadius*cos(((double)i/(double)stacks)*(pi/2));
+        for(j=0;j<=slices;j++) {
+            handlePoints[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
+            handlePoints[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
+            handlePoints[i][j].z=h;
+
+            //handlePoints[i][j] = rotateOneAlongAnother(handlePoints[i][j], axisQW, angleQW);
+            //handlePoints[i][j] = rotateOneAlongAnother(handlePoints[i][j], axisER, angleER);
+
+        }
+    }
+    bool isWhite = false;
+    for(i=0;i<stacks;i++) {
+        for(j=0;j<slices;j++) {
+            glBegin(GL_QUADS);{
+                if (isWhite) {
+                    glColor3f(1, 1, 1);
+                    isWhite = false;
+                }
+                else {
+                    glColor3f(0, 0, 0);
+                    isWhite = true;
+                }
+                glVertex3f(handlePoints[i][j].x,handlePoints[i][j].y,handlePoints[i][j].z);
+                glVertex3f(handlePoints[i][j+1].x,handlePoints[i][j+1].y,handlePoints[i][j+1].z);
+                glVertex3f(handlePoints[i+1][j+1].x,handlePoints[i+1][j+1].y,handlePoints[i+1][j+1].z);
+                glVertex3f(handlePoints[i+1][j].x,handlePoints[i+1][j].y,handlePoints[i+1][j].z);
+
+                glVertex3f(handlePoints[i][j].x,handlePoints[i][j].y,-handlePoints[i][j].z);
+                glVertex3f(handlePoints[i][j+1].x,handlePoints[i][j+1].y,-handlePoints[i][j+1].z);
+                glVertex3f(handlePoints[i+1][j+1].x,handlePoints[i+1][j+1].y,-handlePoints[i+1][j+1].z);
+                glVertex3f(handlePoints[i+1][j].x,handlePoints[i+1][j].y,-handlePoints[i+1][j].z);
+            }glEnd();
+        }
+    }
+}
+
+
 double getRandom(double a, double b) {
     std::random_device randomDevice;
     std::mt19937 mt19937(randomDevice());

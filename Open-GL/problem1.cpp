@@ -116,9 +116,11 @@ void display(){
     glMatrixMode(GL_MODELVIEW);
     glColor3f(1, 1, 1);
     drawAxes();
-    drawGunHandle(18,50,200);
-    drawGunBody(80, 6, 50, 200);
-    drawGunHead(80, 9, 1.2, 50, 200);
+    //drawGunHandle(18,50,200);
+    //drawGunBody(80, 6, 50, 200);
+    //drawGunHead(80, 9, 1.2, 50, 200);
+
+    drawGun(18, 0, 0);
     glutSwapBuffers();
 }
 
