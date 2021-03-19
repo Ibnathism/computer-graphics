@@ -293,10 +293,15 @@ void drawGunHead(double height, double radius, double headOffset, int slices,int
                     glColor3f(0, 0, 0);
                     isWhite = true;
                 }
-                if (points[i][j].z >= height*0.2) glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
-                if (points[i][j+1].z >= height*0.2) glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
-                if (points[i+1][j+1].z >= height*0.2) glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
-                if (points[i+1][j].z >= height*0.2) glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
+                if (points[i][j].z >= height*0.2 && points[i][j+1].z >= height*0.2) {
+                    if (points[i+1][j+1].z >= height*0.2 && points[i+1][j].z >= height*0.2) {
+                        glVertex3f(points[i][j].x,points[i][j].y,points[i][j].z);
+                        glVertex3f(points[i][j+1].x,points[i][j+1].y,points[i][j+1].z);
+                        glVertex3f(points[i+1][j+1].x,points[i+1][j+1].y,points[i+1][j+1].z);
+                        glVertex3f(points[i+1][j].x,points[i+1][j].y,points[i+1][j].z);
+                    }
+                }
+
             }glEnd();
         }
     }
