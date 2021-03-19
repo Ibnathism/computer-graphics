@@ -311,15 +311,14 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius) {
     int slices = 50;
     int stacks = 200;
     Point handlePoints[stacks+1][slices+1];
-    int i,j;
-    double h,r;
-    for(i=0;i<=stacks;i++) {
-        h=handleRadius*sin(((double)i/(double)stacks)*(pi/2));
-        r=handleRadius*cos(((double)i/(double)stacks)*(pi/2));
-        for(j=0;j<=slices;j++) {
-            handlePoints[i][j].x=r*cos(((double)j/(double)slices)*2*pi);
-            handlePoints[i][j].y=r*sin(((double)j/(double)slices)*2*pi);
-            handlePoints[i][j].z=h;
+    double handleH, handleR;
+    for(int i=0;i<=stacks;i++) {
+        handleH = handleRadius*sin(((double)i/(double)stacks)*(pi/2));
+        handleR = handleRadius*cos(((double)i/(double)stacks)*(pi/2));
+        for(int j=0;j<=slices;j++) {
+            handlePoints[i][j].x = handleR * cos(((double)j/(double)slices)*2*pi);
+            handlePoints[i][j].y = handleR * sin(((double)j/(double)slices)*2*pi);
+            handlePoints[i][j].z = handleH;
 
             //handlePoints[i][j] = rotateOneAlongAnother(handlePoints[i][j], axisQW, angleQW);
             //handlePoints[i][j] = rotateOneAlongAnother(handlePoints[i][j], axisER, angleER);
@@ -327,8 +326,8 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius) {
         }
     }
     bool isWhite = false;
-    for(i=0;i<stacks;i++) {
-        for(j=0;j<slices;j++) {
+    for(int i=0;i<stacks;i++) {
+        for(int j=0;j<slices;j++) {
             glBegin(GL_QUADS);{
                 if (isWhite) {
                     glColor3f(1, 1, 1);
@@ -347,6 +346,61 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius) {
                 glVertex3f(handlePoints[i][j+1].x,handlePoints[i][j+1].y,-handlePoints[i][j+1].z);
                 glVertex3f(handlePoints[i+1][j+1].x,handlePoints[i+1][j+1].y,-handlePoints[i+1][j+1].z);
                 glVertex3f(handlePoints[i+1][j].x,handlePoints[i+1][j].y,-handlePoints[i+1][j].z);
+            }glEnd();
+        }
+    }
+
+
+    Point bodyPoints[stacks+1][slices+1];
+    double bodyH, bodyR;
+    for(int i=0;i<=stacks;i++) {
+        bodyH = bodyHeight*sin(((double)i/(double)stacks)*(pi/2));
+        bodyR = bodyRadius;
+        for(int j=0;j<=slices;j++) {
+            int joint = (int) (0.2 * stacks);
+            if (i > joint) {
+                bodyPoints[i][j].x = bodyR*cos(angleDF + ((double)j/(double)slices)*2*pi);
+                bodyPoints[i][j].y = bodyR*sin(angleDF + ((double)j/(double)slices)*2*pi);
+                bodyPoints[i][j].z = bodyH;
+
+//                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisQW, angleQW);
+//                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisAS, angleAS);
+//                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisER, angleER);
+            } else {
+                double angleOnJoint = (double)i/(double)joint;
+                bodyR = bodyRadius * cos(angleOnJoint * (pi/2));
+                bodyH = (bodyHeight*0.2) * sin( angleOnJoint * (pi/2));
+
+                bodyPoints[i][j].x = bodyR*cos(angleDF + ((double)j/(double)slices)*2*pi);
+                bodyPoints[i][j].y = bodyR*sin(angleDF + ((double)j/(double)slices)*2*pi);
+                bodyPoints[i][j].z = bodyH;
+
+//                Point temp(0, 0, 1);
+//                Point addMore(0, 0, height*0.2*2);
+//                bodyPoints[i][j] = (rotateOneAlongAnother(bodyPoints[i][j], temp, 180)).summation(addMore);
+//                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisQW, angleQW);
+//                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisAS, angleAS);
+//                bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisER, angleER);
+            }
+        }
+    }
+
+    isWhite = false;
+    for(int i=0;i<stacks;i++) {
+        for(int j=0;j<slices;j++) {
+            glBegin(GL_QUADS);{
+                if (isWhite) {
+                    glColor3f(1, 1, 1);
+                    isWhite = false;
+                }
+                else {
+                    glColor3f(0, 0, 0);
+                    isWhite = true;
+                }
+                glVertex3f(bodyPoints[i][j].x,bodyPoints[i][j].y,bodyPoints[i][j].z);
+                glVertex3f(bodyPoints[i][j+1].x,bodyPoints[i][j+1].y,bodyPoints[i][j+1].z);
+                glVertex3f(bodyPoints[i+1][j+1].x,bodyPoints[i+1][j+1].y,bodyPoints[i+1][j+1].z);
+                glVertex3f(bodyPoints[i+1][j].x,bodyPoints[i+1][j].y,bodyPoints[i+1][j].z);
             }glEnd();
         }
     }
