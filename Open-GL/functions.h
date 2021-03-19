@@ -11,15 +11,20 @@
 
 #define pi (2*acos(0.0))
 
-Point axisQW(0, 1, 0);
-double angleQW = 15;
-Point axisER(1, 0, 0);
-double angleER = 20;
-Point axisAS(1, 0, 0);
-double angleAS = 15;
-Point axisDF(0, 0, 0);
-double angleDF = 45;
+Point axisQW(1, 0, 0);
+double angleQW = 0;
+double maxAngleQW = 15;
+Point axisER(0, 1, 0);
+double angleER = 0;
+double maxAngleER = 20;
+Point axisAS(0, 1, 0);
+double angleAS = 0;
+double maxAngleAS = 15;
+//Point axisDF(0, 0, 0);
+double angleDF = 0;
+double maxAngleDF = 45;
 
+double angleToChange = 1.0;
 
 void clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -139,35 +144,43 @@ Point rotateOneAlongAnother(Point &toBeRotated, Point &respective, double angleO
 }
 
 void applyQRotation() {
-    angleQW = angleQW + 1.0;
+    if (std::abs(angleQW + angleToChange) > maxAngleQW) return;
+    angleQW = angleQW + angleToChange;
 }
 
 void applyWRotation() {
-    angleQW = angleQW - 1.0;
+    if (std::abs(angleQW - angleToChange) > maxAngleQW) return;
+    angleQW = angleQW - angleToChange;
 }
 
 void applyERotation() {
-    angleER = angleER + 1.0;
+    if (std::abs(angleER + angleToChange) > maxAngleER) return;
+    angleER = angleER + angleToChange;
 }
 
 void applyRRotation() {
-    angleER = angleER - 1.0;
+    if (std::abs(angleER - angleToChange) > maxAngleER) return;
+    angleER = angleER - angleToChange;
 }
 
 void applyARotation() {
-    angleAS = angleAS + 1.0;
+    if (std::abs(angleAS + angleToChange) > maxAngleAS) return;
+    angleAS = angleAS + angleToChange;
 }
 
 void applySRotation() {
-    angleAS = angleAS - 1.0;
+    if (std::abs(angleAS - angleToChange) > maxAngleAS) return;
+    angleAS = angleAS - angleToChange;
 }
 
 void applyDRotation() {
-    angleDF = angleDF + 1.0;
+    if (std::abs(angleDF + angleToChange) > maxAngleDF) return;
+    angleDF = angleDF + angleToChange;
 }
 
 void applyFRotation() {
-    angleDF = angleDF - 1.0;
+    if (std::abs(angleDF - angleToChange) > maxAngleDF) return;
+    angleDF = angleDF - angleToChange;
 }
 
 void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double headRadius, double headOffset) {
@@ -303,7 +316,6 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double h
                         glVertex3f(headPoints[i+1][j].x,headPoints[i+1][j].y,headPoints[i+1][j].z);
                     }
                 }
-
             }glEnd();
         }
     }
