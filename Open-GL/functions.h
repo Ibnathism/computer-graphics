@@ -11,6 +11,7 @@
 
 #define pi (2*acos(0.0))
 
+
 Point axisQW(1, 0, 0);
 double angleQW = 0;
 double maxAngleQW = 15;
@@ -25,6 +26,8 @@ double angleDF = 0;
 double maxAngleDF = 45;
 
 double angleToChange = 1.0;
+Point headCenter(0, 0, 80);
+Point updatedCenter(0, 0, 80);
 
 void clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -143,34 +146,46 @@ Point rotateOneAlongAnother(Point &toBeRotated, Point &respective, double angleO
     return answer;
 }
 
+void setHeadCenter(){
+    updatedCenter = rotateOneAlongAnother(headCenter, axisQW, angleQW);
+    updatedCenter = rotateOneAlongAnother(updatedCenter, axisER, angleER);
+    updatedCenter = rotateOneAlongAnother(updatedCenter, axisAS, angleAS);
+}
+
 void applyQRotation() {
     if (std::abs(angleQW + angleToChange) > maxAngleQW) return;
     angleQW = angleQW + angleToChange;
+    setHeadCenter();
 }
 
 void applyWRotation() {
     if (std::abs(angleQW - angleToChange) > maxAngleQW) return;
     angleQW = angleQW - angleToChange;
+    setHeadCenter();
 }
 
 void applyERotation() {
     if (std::abs(angleER + angleToChange) > maxAngleER) return;
     angleER = angleER + angleToChange;
+    setHeadCenter();
 }
 
 void applyRRotation() {
     if (std::abs(angleER - angleToChange) > maxAngleER) return;
     angleER = angleER - angleToChange;
+    setHeadCenter();
 }
 
 void applyARotation() {
     if (std::abs(angleAS + angleToChange) > maxAngleAS) return;
     angleAS = angleAS + angleToChange;
+    setHeadCenter();
 }
 
 void applySRotation() {
     if (std::abs(angleAS - angleToChange) > maxAngleAS) return;
     angleAS = angleAS - angleToChange;
+    setHeadCenter();
 }
 
 void applyDRotation() {
@@ -320,3 +335,4 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double h
         }
     }
 }
+
