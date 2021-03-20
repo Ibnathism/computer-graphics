@@ -109,7 +109,7 @@ void mouseListener(int button, int state, int x, int y){	//x, y is the x-y of th
     switch(button){
         case GLUT_LEFT_BUTTON:
             if(state == GLUT_DOWN){		// 2 times?? in ONE click? -- solution is checking DOWN or UP
-
+                fireBullets();
             }
             break;
 
@@ -140,6 +140,10 @@ void display(){
     glColor3f(1, 1, 1);
     drawAxes();
     drawGun(18, 80, 6, 9, 1.2);
+    glColor3f(0.5, 0.5, 0.5);
+    draw2DRectangle(Point(-100, 100, 200), Point(-100, -100, 200), Point(100, 100, 200), Point(100, -100, 200));
+    glColor3f(1, 0, 0);
+    drawBulletsOnPlane();
     glutSwapBuffers();
 }
 
@@ -167,7 +171,7 @@ int main(int argc, char **argv){
     glutIdleFunc(animate);
     glutKeyboardFunc(keyboardListener);
     glutSpecialFunc(specialKeyListener);
-    //glutMouseFunc(mouseListener);
+    glutMouseFunc(mouseListener);
     glutMainLoop();
     return 0;
 }

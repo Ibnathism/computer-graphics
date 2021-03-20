@@ -10,7 +10,7 @@
 #include <random>
 
 #define pi (2*acos(0.0))
-
+double planeDistance = 200;
 
 Point axisQW(1, 0, 0);
 double angleQW = 0;
@@ -28,6 +28,8 @@ double maxAngleDF = 45;
 double angleToChange = 1.0;
 Point headCenter(0, 0, 80);
 Point updatedCenter(0, 0, 80);
+Point totalBullets[1000];
+int bulletCount = 0;
 
 void clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -68,17 +70,13 @@ void drawGrid() {
 }
 
 void draw2DRectangle(Point topLeft, Point bottomLeft, Point topRight, Point bottomRight) {
-    glBegin(GL_LINES);{
-        //Left Side
+    glBegin(GL_QUADS);{
         glVertex3f(topLeft.x, topLeft.y, topLeft.z);
         glVertex3f(bottomLeft.x, bottomRight.y, bottomLeft.z);
-        //Right Side
         glVertex3f(topRight.x, topRight.y, topRight.z);
         glVertex3f(bottomRight.x, bottomRight.y, bottomRight.z);
-        //Top Side
         glVertex3f(topLeft.x, topLeft.y, topLeft.z);
         glVertex3f(topRight.x, topRight.y, topRight.z);
-        //Bottom Side
         glVertex3f(bottomLeft.x, bottomLeft.y, bottomLeft.z);
         glVertex3f(bottomRight.x, bottomRight.y, bottomRight.z);
     }glEnd();
@@ -336,3 +334,15 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double h
     }
 }
 
+void drawBulletsOnPlane() {
+    for (int i = 0; i < bulletCount; ++i) {
+        Point temp = totalBullets[i];
+        draw2DRectangle(Point(temp.x-2, temp.y+2, temp.z-20), Point(temp.x-2, temp.y-2, temp.z-20), Point(temp.x+2, temp.y+2, temp.z-20), Point(temp.x+2, temp.y-2, temp.z-20));
+    }
+}
+void fireBullets() {
+    double temp = std::abs(planeDistance/updatedCenter.z);
+    Point bulletPosition = updatedCenter.constantScale(temp);
+    totalBullets[bulletCount] = bulletPosition;
+    bulletCount = bulletCount + 1;
+}
