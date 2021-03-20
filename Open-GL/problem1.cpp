@@ -6,6 +6,10 @@ Point rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
 Point upDir = Point(0,0,1);
 Point lookDir = upDir.crossMultiplication(rightDir);
 
+//Point rightDir = Point(-0.23, 0.94, 0.25);
+//Point upDir = Point(0.95, 0.17, 0.23);
+//Point lookDir = upDir.crossMultiplication(rightDir);
+
 void keyboardListener(unsigned char key, int x,int y){
     double positiveAngle = 3.0;
     double negativeAngle = -3.0;
@@ -14,26 +18,32 @@ void keyboardListener(unsigned char key, int x,int y){
         case '1':
             lookDir = rotateOneAlongAnother(lookDir, upDir, positiveAngle);
             rightDir = lookDir.crossMultiplication(upDir);
+            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case '2':
             lookDir = rotateOneAlongAnother(lookDir, upDir, negativeAngle);
             rightDir = lookDir.crossMultiplication(upDir);
+            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case '3':
             lookDir = rotateOneAlongAnother(lookDir, rightDir, positiveAngle);
             upDir = rightDir.crossMultiplication(lookDir);
+            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case '4':
             lookDir = rotateOneAlongAnother(lookDir, rightDir, negativeAngle);
             upDir = rightDir.crossMultiplication(lookDir);
+            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case '5':
             rightDir = rotateOneAlongAnother(rightDir, lookDir, negativeAngle);
             upDir = rightDir.crossMultiplication(lookDir);
+            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case '6':
             rightDir = rotateOneAlongAnother(rightDir, lookDir, positiveAngle);
             upDir = rightDir.crossMultiplication(lookDir);
+            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case 'q':
             applyQRotation();
@@ -66,21 +76,27 @@ void specialKeyListener(int key, int x,int y){
     switch(key){
         case GLUT_KEY_DOWN:
             position = position.subtraction(lookDir);
+            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_UP:
             position = position.summation(lookDir);
+            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_RIGHT:
             position = position.summation(rightDir);
+            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_LEFT:
             position = position.subtraction(rightDir);
+            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_PAGE_UP:
             position = position.summation(upDir);
+            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_PAGE_DOWN:
             position = position.subtraction(upDir);
+            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         default:
             break;
@@ -120,6 +136,7 @@ void display(){
     glutSwapBuffers();
 }
 void animate(){
+
     glutPostRedisplay();
 }
 void init(){

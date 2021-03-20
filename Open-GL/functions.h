@@ -14,18 +14,15 @@
 double initOffset = 5.0;
 double planeDistance = 200;
 
+double maxAngle = 45;
+
 Point axisQW(1, 0, 0);
 double angleQW = 0;
-double maxAngleQW = 15;
 Point axisER(0, 1, 0);
 double angleER = 0;
-double maxAngleER = 20;
 Point axisAS(0, 1, 0);
 double angleAS = 0;
-double maxAngleAS = 15;
-//Point axisDF(0, 0, 0);
 double angleDF = 0;
-double maxAngleDF = 45;
 
 double angleToChange = 1.0;
 Point headCenter(0, 0, 80);
@@ -175,48 +172,48 @@ void setHeadCenter(){
 }
 
 void applyQRotation() {
-    if (std::abs(angleQW + angleToChange) > maxAngleQW) return;
+    if (std::abs(angleQW + angleToChange) > maxAngle) return;
     angleQW = angleQW + angleToChange;
     setHeadCenter();
 }
 
 void applyWRotation() {
-    if (std::abs(angleQW - angleToChange) > maxAngleQW) return;
+    if (std::abs(angleQW - angleToChange) > maxAngle) return;
     angleQW = angleQW - angleToChange;
     setHeadCenter();
 }
 
 void applyERotation() {
-    if (std::abs(angleER + angleToChange) > maxAngleER) return;
+    if (std::abs(angleER + angleToChange) > maxAngle) return;
     angleER = angleER + angleToChange;
     setHeadCenter();
 }
 
 void applyRRotation() {
-    if (std::abs(angleER - angleToChange) > maxAngleER) return;
+    if (std::abs(angleER - angleToChange) > maxAngle) return;
     angleER = angleER - angleToChange;
     setHeadCenter();
 }
 
 void applyARotation() {
-    if (std::abs(angleAS + angleToChange) > maxAngleAS) return;
+    if (std::abs(angleAS + angleToChange) > maxAngle) return;
     angleAS = angleAS + angleToChange;
     setHeadCenter();
 }
 
 void applySRotation() {
-    if (std::abs(angleAS - angleToChange) > maxAngleAS) return;
+    if (std::abs(angleAS - angleToChange) > maxAngle) return;
     angleAS = angleAS - angleToChange;
     setHeadCenter();
 }
 
 void applyDRotation() {
-    if (std::abs(angleDF + angleToChange) > maxAngleDF) return;
+    if (std::abs(angleDF + angleToChange) > maxAngle) return;
     angleDF = angleDF + angleToChange;
 }
 
 void applyFRotation() {
-    if (std::abs(angleDF - angleToChange) > maxAngleDF) return;
+    if (std::abs(angleDF - angleToChange) > maxAngle) return;
     angleDF = angleDF - angleToChange;
 }
 
