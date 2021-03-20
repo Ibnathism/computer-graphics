@@ -1,25 +1,10 @@
 #include <GL/glut.h>
 #include "functions.h"
 
-
-class Cam {
-public:
-    Point position;
-    Point lookDir;
-    Point upDir;
-    Point rightDir;
-
-    Cam() {
-        position = Point(150, 150, 50);
-        rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
-        upDir = Point(0,0,1);
-        lookDir = upDir.crossMultiplication(rightDir);
-    }
-};
-
-Cam myCamera;
-
-
+Point position = Point(150, 150, 50);
+Point rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
+Point upDir = Point(0,0,1);
+Point lookDir = upDir.crossMultiplication(rightDir);
 
 void keyboardListener(unsigned char key, int x,int y){
     double positiveAngle = 3.0;
@@ -27,28 +12,28 @@ void keyboardListener(unsigned char key, int x,int y){
 
     switch(key){
         case '1':
-            myCamera.lookDir = rotateOneAlongAnother(myCamera.lookDir, myCamera.upDir, positiveAngle);
-            myCamera.rightDir = myCamera.lookDir.crossMultiplication(myCamera.upDir);
+            lookDir = rotateOneAlongAnother(lookDir, upDir, positiveAngle);
+            rightDir = lookDir.crossMultiplication(upDir);
             break;
         case '2':
-            myCamera.lookDir = rotateOneAlongAnother(myCamera.lookDir, myCamera.upDir, negativeAngle);
-            myCamera.rightDir = myCamera.lookDir.crossMultiplication(myCamera.upDir);
+            lookDir = rotateOneAlongAnother(lookDir, upDir, negativeAngle);
+            rightDir = lookDir.crossMultiplication(upDir);
             break;
         case '3':
-            myCamera.lookDir = rotateOneAlongAnother(myCamera.lookDir, myCamera.rightDir, positiveAngle);
-            myCamera.upDir = myCamera.rightDir.crossMultiplication(myCamera.lookDir);
+            lookDir = rotateOneAlongAnother(lookDir, rightDir, positiveAngle);
+            upDir = rightDir.crossMultiplication(lookDir);
             break;
         case '4':
-            myCamera.lookDir = rotateOneAlongAnother(myCamera.lookDir, myCamera.rightDir, negativeAngle);
-            myCamera.upDir = myCamera.rightDir.crossMultiplication(myCamera.lookDir);
+            lookDir = rotateOneAlongAnother(lookDir, rightDir, negativeAngle);
+            upDir = rightDir.crossMultiplication(lookDir);
             break;
         case '5':
-            myCamera.rightDir = rotateOneAlongAnother(myCamera.rightDir, myCamera.lookDir, negativeAngle);
-            myCamera.upDir = myCamera.rightDir.crossMultiplication(myCamera.lookDir);
+            rightDir = rotateOneAlongAnother(rightDir, lookDir, negativeAngle);
+            upDir = rightDir.crossMultiplication(lookDir);
             break;
         case '6':
-            myCamera.rightDir = rotateOneAlongAnother(myCamera.rightDir, myCamera.lookDir, positiveAngle);
-            myCamera.upDir = myCamera.rightDir.crossMultiplication(myCamera.lookDir);
+            rightDir = rotateOneAlongAnother(rightDir, lookDir, positiveAngle);
+            upDir = rightDir.crossMultiplication(lookDir);
             break;
         case 'q':
             applyQRotation();
@@ -77,34 +62,30 @@ void keyboardListener(unsigned char key, int x,int y){
             break;
     }
 }
-
-
 void specialKeyListener(int key, int x,int y){
     switch(key){
         case GLUT_KEY_DOWN:
-            myCamera.position = myCamera.position.subtraction(myCamera.lookDir);
+            position = position.subtraction(lookDir);
             break;
         case GLUT_KEY_UP:
-            myCamera.position = myCamera.position.summation(myCamera.lookDir);
+            position = position.summation(lookDir);
             break;
         case GLUT_KEY_RIGHT:
-            myCamera.position = myCamera.position.summation(myCamera.rightDir);
+            position = position.summation(rightDir);
             break;
         case GLUT_KEY_LEFT:
-            myCamera.position = myCamera.position.subtraction(myCamera.rightDir);
+            position = position.subtraction(rightDir);
             break;
         case GLUT_KEY_PAGE_UP:
-            myCamera.position = myCamera.position.summation(myCamera.upDir);
+            position = position.summation(upDir);
             break;
         case GLUT_KEY_PAGE_DOWN:
-            myCamera.position = myCamera.position.subtraction(myCamera.upDir);
+            position = position.subtraction(upDir);
             break;
         default:
             break;
     }
 }
-
-
 void mouseListener(int button, int state, int x, int y){
     switch(button){
         case GLUT_LEFT_BUTTON:
@@ -123,16 +104,11 @@ void mouseListener(int button, int state, int x, int y){
     }
 }
 
-
-
 void display(){
     clear();
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    double tempX = myCamera.position.x;
-    double tempY = myCamera.position.y;
-    double tempZ = myCamera.position.z;
-    gluLookAt(tempX, tempY, tempZ, tempX+myCamera.lookDir.x, tempY+myCamera.lookDir.y, tempZ+myCamera.lookDir.z, myCamera.upDir.x, myCamera.upDir.y, myCamera.upDir.z);
+    gluLookAt(position.x, position.y, position.y, position.x+lookDir.x, position.y+lookDir.y, position.y+lookDir.z, upDir.x, upDir.y, upDir.z);
     glMatrixMode(GL_MODELVIEW);
     glColor3f(1, 1, 1);
     drawAxes();
@@ -143,12 +119,9 @@ void display(){
     drawBulletsOnPlane();
     glutSwapBuffers();
 }
-
-
 void animate(){
     glutPostRedisplay();
 }
-
 void init(){
     clear();
     glMatrixMode(GL_PROJECTION);
