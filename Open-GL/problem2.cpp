@@ -10,11 +10,7 @@
 
 double circleRadius = 60;
 double bubbleRadius = 10.0;
-double rectangleWidth = 500;
-double rectangleHeight = 500;
 double bubbleSpeed = 0.15;
-double bubbleMaxSpeed = 0.8;
-double bubbleMinSpeed = 0.05;
 double initOffset = 5.0;
 double offset = 11.0;
 bool isPlay = true;
@@ -115,12 +111,12 @@ void keyboardListener(unsigned char key, int x,int y){
 void specialKeyListener(int key, int x,int y){
     switch(key){
         case GLUT_KEY_DOWN:
-            if (bubbleSpeed - 0.02 > bubbleMinSpeed) bubbleSpeed = bubbleSpeed - 0.02;
-            else bubbleSpeed = bubbleMinSpeed;
+            if (bubbleSpeed - 0.02 >= 0) bubbleSpeed = bubbleSpeed - 0.02;
+            else bubbleSpeed = 0;
             break;
         case GLUT_KEY_UP:
-            if (bubbleSpeed + 0.02 < bubbleMaxSpeed) bubbleSpeed = bubbleSpeed + 0.02;
-            else bubbleSpeed = bubbleMaxSpeed;
+            if (bubbleSpeed + 0.02 <= 0.8) bubbleSpeed = bubbleSpeed + 0.02;
+            else bubbleSpeed = 0.8;
             break;
         default:
             break;
@@ -232,7 +228,7 @@ void init(){
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(80,	1,	1,	1000.0);
-    rectangle = Rect2D(rectangleWidth, rectangleHeight);
+    rectangle = Rect2D(500, 500);
     Point center(0, 0, 0);
     circle = Circle2D(center, circleRadius);
 
