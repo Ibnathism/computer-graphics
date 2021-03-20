@@ -136,11 +136,7 @@ void display(){
     glMatrixMode(GL_MODELVIEW);
     glColor3f(1, 1, 1);
     drawAxes();
-    drawGun(18, 80, 6, 9, 1.2);
-    glColor3f(0.5, 0.5, 0.5);
-    drawSolidRectangle(Point(-100, 100, 200), Point(-100, -100, 200), Point(100, 100, 200), Point(100, -100, 200));
-    glColor3f(1, 0, 0);
-    drawBulletsOnPlane();
+    drawGunFiringStructure(18, 80, 6, 9, 1.2);
     glutSwapBuffers();
 }
 

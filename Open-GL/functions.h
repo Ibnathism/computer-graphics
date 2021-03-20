@@ -215,50 +215,10 @@ void applyFRotation() {
     angleDF = angleDF - angleToChange;
 }
 
-void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double headRadius, double headOffset) {
+void drawGunFiringStructure(double handleRadius, double bodyHeight, double bodyRadius, double headRadius, double headOffset) {
 
     int slices = 50;
     int stacks = 200;
-
-    Point handlePoints[stacks+1][slices+1];
-    double handleH, handleR;
-    for(int i=0;i<=stacks;i++) {
-        handleH = handleRadius*sin(((double)i/(double)stacks)*(pi/2));
-        handleR = handleRadius*cos(((double)i/(double)stacks)*(pi/2));
-        for(int j=0;j<=slices;j++) {
-            handlePoints[i][j].x = handleR * cos(((double)j/(double)slices)*2*pi);
-            handlePoints[i][j].y = handleR * sin(((double)j/(double)slices)*2*pi);
-            handlePoints[i][j].z = handleH;
-
-            handlePoints[i][j] = rotateOneAlongAnother(handlePoints[i][j], axisQW, angleQW);
-            handlePoints[i][j] = rotateOneAlongAnother(handlePoints[i][j], axisER, angleER);
-
-        }
-    }
-    bool isWhite = false;
-    for(int i=0;i<stacks;i++) {
-        for(int j=0;j<slices;j++) {
-            glBegin(GL_QUADS);{
-                if (isWhite) {
-                    glColor3f(1, 1, 1);
-                    isWhite = false;
-                }
-                else {
-                    glColor3f(0, 0, 0);
-                    isWhite = true;
-                }
-                glVertex3f(handlePoints[i][j].x,handlePoints[i][j].y,handlePoints[i][j].z);
-                glVertex3f(handlePoints[i][j+1].x,handlePoints[i][j+1].y,handlePoints[i][j+1].z);
-                glVertex3f(handlePoints[i+1][j+1].x,handlePoints[i+1][j+1].y,handlePoints[i+1][j+1].z);
-                glVertex3f(handlePoints[i+1][j].x,handlePoints[i+1][j].y,handlePoints[i+1][j].z);
-
-                glVertex3f(handlePoints[i][j].x,handlePoints[i][j].y,-handlePoints[i][j].z);
-                glVertex3f(handlePoints[i][j+1].x,handlePoints[i][j+1].y,-handlePoints[i][j+1].z);
-                glVertex3f(handlePoints[i+1][j+1].x,handlePoints[i+1][j+1].y,-handlePoints[i+1][j+1].z);
-                glVertex3f(handlePoints[i+1][j].x,handlePoints[i+1][j].y,-handlePoints[i+1][j].z);
-            }glEnd();
-        }
-    }
 
     Point bodyPoints[stacks+1][slices+1];
     double bodyH, bodyR;
@@ -293,7 +253,7 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double h
             }
         }
     }
-    isWhite = false;
+    bool isWhite = false;
     for(int i=0;i<stacks;i++) {
         for(int j=0;j<slices;j++) {
             glBegin(GL_QUADS);{
@@ -312,6 +272,48 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double h
             }glEnd();
         }
     }
+
+    Point handlePoints[stacks+1][slices+1];
+    double handleH, handleR;
+    for(int i=0;i<=stacks;i++) {
+        handleH = handleRadius*sin(((double)i/(double)stacks)*(pi/2));
+        handleR = handleRadius*cos(((double)i/(double)stacks)*(pi/2));
+        for(int j=0;j<=slices;j++) {
+            handlePoints[i][j].x = handleR * cos(((double)j/(double)slices)*2*pi);
+            handlePoints[i][j].y = handleR * sin(((double)j/(double)slices)*2*pi);
+            handlePoints[i][j].z = handleH;
+
+            handlePoints[i][j] = rotateOneAlongAnother(handlePoints[i][j], axisQW, angleQW);
+            handlePoints[i][j] = rotateOneAlongAnother(handlePoints[i][j], axisER, angleER);
+
+        }
+    }
+    isWhite = false;
+    for(int i=0;i<stacks;i++) {
+        for(int j=0;j<slices;j++) {
+            glBegin(GL_QUADS);{
+                if (isWhite) {
+                    glColor3f(1, 1, 1);
+                    isWhite = false;
+                }
+                else {
+                    glColor3f(0, 0, 0);
+                    isWhite = true;
+                }
+                glVertex3f(handlePoints[i][j].x,handlePoints[i][j].y,handlePoints[i][j].z);
+                glVertex3f(handlePoints[i][j+1].x,handlePoints[i][j+1].y,handlePoints[i][j+1].z);
+                glVertex3f(handlePoints[i+1][j+1].x,handlePoints[i+1][j+1].y,handlePoints[i+1][j+1].z);
+                glVertex3f(handlePoints[i+1][j].x,handlePoints[i+1][j].y,handlePoints[i+1][j].z);
+
+                glVertex3f(handlePoints[i][j].x,handlePoints[i][j].y,-handlePoints[i][j].z);
+                glVertex3f(handlePoints[i][j+1].x,handlePoints[i][j+1].y,-handlePoints[i][j+1].z);
+                glVertex3f(handlePoints[i+1][j+1].x,handlePoints[i+1][j+1].y,-handlePoints[i+1][j+1].z);
+                glVertex3f(handlePoints[i+1][j].x,handlePoints[i+1][j].y,-handlePoints[i+1][j].z);
+            }glEnd();
+        }
+    }
+
+
 
     Point headPoints[stacks+1][slices+1];
     double headH, headR;
@@ -351,14 +353,15 @@ void drawGun(double handleRadius, double bodyHeight, double bodyRadius, double h
             }glEnd();
         }
     }
-}
-
-void drawBulletsOnPlane() {
+    glColor3f(0.5, 0.5, 0.5);
+    drawSolidRectangle(Point(-100, 100, 200), Point(-100, -100, 200), Point(100, 100, 200), Point(100, -100, 200));
+    glColor3f(1, 0, 0);
     for (int i = 0; i < bulletCount; ++i) {
         Point temp = totalBullets[i];
         drawSolidRectangle(Point(temp.x-2, temp.y+2, temp.z-20), Point(temp.x-2, temp.y-2, temp.z-20), Point(temp.x+2, temp.y+2, temp.z-20), Point(temp.x+2, temp.y-2, temp.z-20));
     }
 }
+
 void fireBullets() {
     double temp = std::abs(planeDistance/updatedCenter.z);
     Point bulletPosition = updatedCenter.constantScale(temp);
