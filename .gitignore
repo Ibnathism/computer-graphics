@@ -1,6 +1,8 @@
 *.idea
 Open-GL/cmake-build-debug
-
+Open-GL/demo2.cpp
+Open-GL/Demo/*
+Open-GL/Demo
 # Prerequisites
 *.d
 
