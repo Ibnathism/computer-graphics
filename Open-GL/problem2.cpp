@@ -10,8 +10,7 @@
 
 double circleRadius = 60;
 double bubbleRadius = 10.0;
-double bubbleSpeed = 0.15;
-double initOffset = 5.0;
+double bubbleSpeed = 0.1;
 double offset = 11.0;
 bool isPlay = true;
 
@@ -84,12 +83,7 @@ public:
         appeared = false;
     }
 
-    bool isColliding(Point & pointPosition) {
-        double d = centerToCenterDistance(this->center, pointPosition);
-        bool minCondition = d >= 2 * this->radius - this->radius/initOffset;
-        bool maxCondition = d <= 2 * this->radius + this->radius/initOffset;
-        return minCondition && maxCondition;
-    }
+
 };
 
 Bubble2D * bubble2DList[TOTAL];
@@ -115,8 +109,8 @@ void specialKeyListener(int key, int x,int y){
             else bubbleSpeed = 0;
             break;
         case GLUT_KEY_UP:
-            if (bubbleSpeed + 0.02 <= 0.8) bubbleSpeed = bubbleSpeed + 0.02;
-            else bubbleSpeed = 0.8;
+            if (bubbleSpeed + 0.02 <= 0.7) bubbleSpeed = bubbleSpeed + 0.02;
+            else bubbleSpeed = 0.7;
             break;
         default:
             break;
@@ -187,7 +181,7 @@ void animate(){
                     if (i != j) {
                         Bubble2D *other = bubble2DList[j];
                         if (other->region != IN_RECTANGLE) {
-                            if (temp->isColliding(other->center) && temp->region==IN_CIRCLE && other->region==IN_CIRCLE) {
+                            if (isBubblesColliding(temp->center, other->center, bubbleRadius) && temp->region==IN_CIRCLE && other->region==IN_CIRCLE) {
                                 Point norm = getNormalizedPoint(temp->center.subtraction(other->center));
 
                                 Point scaled = norm.constantScale(2 * norm.dotMultiplication(temp->vectorDir));
@@ -238,7 +232,6 @@ void init(){
         Bubble2D *temp = new Bubble2D(Point(bCenterX, bCenterY, 0));
         bubble2DList[i] = temp;
     }
-
     bringBubblesOneByOne(0);
 }
 

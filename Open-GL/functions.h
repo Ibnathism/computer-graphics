@@ -10,6 +10,8 @@
 #include <random>
 
 #define pi (2*acos(0.0))
+
+double initOffset = 5.0;
 double planeDistance = 200;
 
 Point axisQW(1, 0, 0);
@@ -36,6 +38,8 @@ void clear() {
     glClearColor(0,0,0,0);	//color black
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
+
+
 
 void drawAxes() {
     glBegin(GL_LINES);{
@@ -146,6 +150,13 @@ double centerToCenterDistance(Point & p1, Point & p2) {
     double z = p1.z - p2.z;
     double temp = sqrt(x*x + y*y + z*z);
     return temp;
+}
+
+bool isBubblesColliding(Point & p1, Point & p2, double bubbleRadius) {
+    double d = centerToCenterDistance(p1, p2);
+    bool minCondition = d >= 2 * bubbleRadius - bubbleRadius/initOffset;
+    bool maxCondition = d <= 2 * bubbleRadius + bubbleRadius/initOffset;
+    return minCondition && maxCondition;
 }
 
 Point rotateOneAlongAnother(Point &toBeRotated, Point &respective, double angleOfRotation) {
