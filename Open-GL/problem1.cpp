@@ -105,22 +105,19 @@ void specialKeyListener(int key, int x,int y){
 }
 
 
-void mouseListener(int button, int state, int x, int y){	//x, y is the x-y of the screen (2D)
+void mouseListener(int button, int state, int x, int y){
     switch(button){
         case GLUT_LEFT_BUTTON:
-            if(state == GLUT_DOWN){		// 2 times?? in ONE click? -- solution is checking DOWN or UP
+            if(state == GLUT_DOWN){
                 fireBullets();
             }
             break;
-
         case GLUT_RIGHT_BUTTON:
             //........
             break;
-
         case GLUT_MIDDLE_BUTTON:
             //........
             break;
-
         default:
             break;
     }

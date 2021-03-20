@@ -191,7 +191,7 @@ void animate(){
                     if (i != j) {
                         Bubble2D *other = bubble2DList[j];
                         if (other->region != IN_RECTANGLE) {
-                            if (temp->isColliding(other->center)) {
+                            if (temp->isColliding(other->center) && temp->region==IN_CIRCLE && other->region==IN_CIRCLE) {
                                 Point norm = getNormalizedPoint(temp->center.subtraction(other->center));
 
                                 Point scaled = norm.constantScale(2 * norm.dotMultiplication(temp->vectorDir));
