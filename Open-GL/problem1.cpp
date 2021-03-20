@@ -141,7 +141,7 @@ void display(){
     drawAxes();
     drawGun(18, 80, 6, 9, 1.2);
     glColor3f(0.5, 0.5, 0.5);
-    draw2DRectangle(Point(-100, 100, 200), Point(-100, -100, 200), Point(100, 100, 200), Point(100, -100, 200));
+    drawSolidRectangle(Point(-100, 100, 200), Point(-100, -100, 200), Point(100, 100, 200), Point(100, -100, 200));
     glColor3f(1, 0, 0);
     drawBulletsOnPlane();
     glutSwapBuffers();
