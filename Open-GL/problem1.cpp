@@ -133,7 +133,7 @@ void display(){
     glMatrixMode(GL_MODELVIEW);
     glColor3f(1, 1, 1);
     if (showAxes) drawAxes();
-    drawGunFiringStructure(18, 80, 6, 9, 1.2);
+    drawGunFiringStructure(18, 80, 6, 15, 1.2);
     glutSwapBuffers();
 }
 

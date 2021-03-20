@@ -218,7 +218,7 @@ void applyFRotation() {
 void drawGunFiringStructure(double handleRadius, double bodyHeight, double bodyRadius, double headRadius, double headOffset) {
 
     int slices = 50;
-    int stacks = 200;
+    int stacks = 100;
 
     Point bodyPoints[stacks+1][slices+1];
     double bodyH, bodyR;
@@ -245,7 +245,7 @@ void drawGunFiringStructure(double handleRadius, double bodyHeight, double bodyR
                 bodyPoints[i][j].z = bodyH;
 
                 Point temp(0, 0, 1);
-                Point addMore(0, 0, bodyHeight*0.2*2);
+                Point addMore(0, 0, bodyHeight*0.32);
                 bodyPoints[i][j] = (rotateOneAlongAnother(bodyPoints[i][j], temp, 180)).summation(addMore);
                 bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisQW, angleQW);
                 bodyPoints[i][j] = rotateOneAlongAnother(bodyPoints[i][j], axisAS, angleAS);
@@ -358,13 +358,14 @@ void drawGunFiringStructure(double handleRadius, double bodyHeight, double bodyR
     glColor3f(1, 0, 0);
     for (int i = 0; i < bulletCount; ++i) {
         Point temp = totalBullets[i];
-        drawSolidRectangle(Point(temp.x-2, temp.y+2, temp.z-20), Point(temp.x-2, temp.y-2, temp.z-20), Point(temp.x+2, temp.y+2, temp.z-20), Point(temp.x+2, temp.y-2, temp.z-20));
+        drawSolidRectangle(Point(temp.x-2, temp.y+2, temp.z-10), Point(temp.x-2, temp.y-2, temp.z-10), Point(temp.x+2, temp.y+2, temp.z-10), Point(temp.x+2, temp.y-2, temp.z-10));
     }
 }
 
 void fireBullets() {
     double temp = std::abs(planeDistance/updatedCenter.z);
     Point bulletPosition = updatedCenter.constantScale(temp);
+    if (bulletPosition.x > 100 || bulletPosition.x < -100 || bulletPosition.y > 100 || bulletPosition.y < -100) return;
     totalBullets[bulletCount] = bulletPosition;
     bulletCount = bulletCount + 1;
 }
