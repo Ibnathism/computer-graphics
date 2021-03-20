@@ -19,7 +19,7 @@ public:
 
 Cam myCamera;
 
-
+bool showAxes = true;
 
 void keyboardListener(unsigned char key, int x,int y){
     double positiveAngle = 3.0;
@@ -113,10 +113,7 @@ void mouseListener(int button, int state, int x, int y){
             }
             break;
         case GLUT_RIGHT_BUTTON:
-            //........
-            break;
-        case GLUT_MIDDLE_BUTTON:
-            //........
+            if (state == GLUT_UP) showAxes = !showAxes;
             break;
         default:
             break;
@@ -135,7 +132,7 @@ void display(){
     gluLookAt(tempX, tempY, tempZ, tempX+myCamera.lookDir.x, tempY+myCamera.lookDir.y, tempZ+myCamera.lookDir.z, myCamera.upDir.x, myCamera.upDir.y, myCamera.upDir.z);
     glMatrixMode(GL_MODELVIEW);
     glColor3f(1, 1, 1);
-    drawAxes();
+    if (showAxes) drawAxes();
     drawGunFiringStructure(18, 80, 6, 9, 1.2);
     glutSwapBuffers();
 }
