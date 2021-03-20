@@ -100,8 +100,6 @@ void keyboardListener(unsigned char key, int x,int y){
             break;
     }
 }
-
-
 void specialKeyListener(int key, int x,int y){
     switch(key){
         case GLUT_KEY_DOWN:
@@ -116,7 +114,6 @@ void specialKeyListener(int key, int x,int y){
             break;
     }
 }
-
 
 void display(){
     clear();
@@ -136,7 +133,6 @@ void display(){
     }
     glutSwapBuffers();
 }
-
 void animate(){
 
     for (int i = 0; i < TOTAL; ++i) {
@@ -203,7 +199,6 @@ void animate(){
     glutPostRedisplay();
 }
 
-
 void bringBubblesOneByOne(int x) {
     int count = 0;
     for (int i = 0; i < TOTAL; ++i) {
@@ -216,7 +211,6 @@ void bringBubblesOneByOne(int x) {
     }
     if (count<TOTAL) glutTimerFunc(10000, bringBubblesOneByOne, x);
 }
-
 void init(){
     clear();
     glMatrixMode(GL_PROJECTION);
