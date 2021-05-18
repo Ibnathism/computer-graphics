@@ -1,3 +1,0 @@
-/home/user/Workspaces/Graphics/Computer-Graphics/Rasterization/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/user/Workspaces/Graphics/Computer-Graphics/Rasterization/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/user/Workspaces/Graphics/Computer-Graphics/Rasterization/cmake-build-debug/CMakeFiles/Rasterization.dir

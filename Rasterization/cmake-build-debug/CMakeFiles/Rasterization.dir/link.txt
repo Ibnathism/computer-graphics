@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/Rasterization.dir/main.cpp.o  -o Rasterization 
