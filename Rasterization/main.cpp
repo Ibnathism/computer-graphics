@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cmath>
+
 class Point
 {
 public:
@@ -64,6 +66,12 @@ public:
         return {ansX, ansY, ansZ};
     }
 
+
+    Point normalizePoint() const {
+        double temp = sqrt(this->x*this->x + this->y*this->y + this->z*this->z);
+        return *this/temp;
+    }
+
     void print() const {
         std::cout << '(' << this->x <<", " << this->y << ", " << this->z << ')' << std::endl;
     }
@@ -72,8 +80,10 @@ int main() {
     std::cout << "Hello, World!" << std::endl;
 
     Point P1(1.0, 1.0, 1.0);
-    Point P2(2.0, 2.0, 2.0);
+    Point P2(2.1, 2.0, 2.0);
     Point P3 = P1 * P2;
+    P3.print();
+    P3 = P3.normalizePoint();
     P3.print();
     return 0;
 }
