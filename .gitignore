@@ -1,5 +1,6 @@
 *.idea
 Open-GL/cmake-build-debug
+Rasterization/cmake-build-debug
 
 # Prerequisites
 *.d
