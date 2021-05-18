@@ -2,7 +2,7 @@
 Open-GL/cmake-build-debug
 Demo/*
 Demo
-
+Rasterization/cmake-build-debug
 # Prerequisites
 *.d
 
