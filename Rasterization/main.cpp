@@ -1,8 +1,9 @@
 #include <iostream>
 #include <cmath>
+#include <vector>
 
-class Point
-{
+
+class Point {
 public:
     double x,y,z;
 
@@ -76,14 +77,110 @@ public:
         std::cout << '(' << this->x <<", " << this->y << ", " << this->z << ')' << std::endl;
     }
 };
-int main() {
-    std::cout << "Hello, World!" << std::endl;
 
-    Point P1(1.0, 1.0, 1.0);
-    Point P2(2.1, 2.0, 2.0);
-    Point P3 = P1 * P2;
-    P3.print();
-    P3 = P3.normalizePoint();
-    P3.print();
+class Matrix_2D {
+public:
+    std::vector<std::vector<double>> m;
+
+    Matrix_2D(int nRows, int nColumns) {
+        std::vector<double> row(nColumns, 0);
+        for (int i = 0; i < nRows; ++i) {
+            m.push_back(row);
+        }
+    }
+
+    Matrix_2D operator*(Matrix_2D &temp) const {
+        int nRow1 = this->m.size();
+        int nRow2 = temp.m.size();
+        int nColumn1 = this->m[0].size();
+        int nColumn2 = temp.m[0].size();
+        if (nColumn1 != nRow2) {
+            std::cout << "Matrix Multiplication not possible" << std::endl;
+            return Matrix_2D(nRow1, nColumn1);
+        }
+        Matrix_2D answer(nRow1, nColumn2);
+        for (int i = 0; i < nRow1; ++i) {
+            for (int j = 0; j < nColumn2; ++j) {
+                double value = 0;
+                for (int k = 0; k < nRow1; ++k) {
+                    value = value + this->m[i][k] * temp.m[k][j];
+                }
+                answer.m[i][j] = value;
+            }
+        }
+        return answer;
+    }
+
+    void print() {
+        std::cout << std::endl;
+        for (int i = 0; i < this->m.size(); ++i) {
+            std::cout << "[";
+            for (int j = 0; j < this->m[0].size(); ++j) {
+                std::cout << this->m[i][j] << "  ";
+            }
+            std::cout << "]" << std::endl;
+        }
+    }
+
+
+};
+
+class Functions {
+public:
+    static Matrix_2D getIdentityMatrix(int nRows, int nColumns) {
+        Matrix_2D temp(nRows, nColumns);
+        for (int i = 0, j=0; i < nRows && j < nColumns; ++i, ++j) {
+            temp.m[i][j] = 1;
+        }
+        return temp;
+    }
+    static Matrix_2D getTranslationMatrix(Point point) {
+        Matrix_2D identity = getIdentityMatrix(4, 4);
+        identity.m[0][3] = point.x;
+        identity.m[1][3] = point.y;
+        identity.m[2][3] = point.z;
+        return identity;
+    }
+    static Matrix_2D getRotationalMatrix(Point l, Point r, Point u) {
+        Matrix_2D identity = getIdentityMatrix(4, 4);
+        identity.m[0][0] = r.x;
+        identity.m[0][1] = r.y;
+        identity.m[0][2] = r.z;
+
+        identity.m[1][0] = u.x;
+        identity.m[1][1] = u.y;
+        identity.m[1][2] = u.z;
+
+        identity.m[2][0] = -l.x;
+        identity.m[2][1] = -l.y;
+        identity.m[2][2] = -l.z;
+
+        return identity;
+    }
+
+
+};
+
+Matrix_2D viewTransformation(Point eye, Point look, Point up) {
+    Point l = look - eye;
+    l = l.normalizePoint();
+    Point r = l.crossMultiplication(up);
+    r = r.normalizePoint();
+    Point u = r.crossMultiplication(l);
+    Point negativeEye = -eye;
+    Matrix_2D T = Functions::getTranslationMatrix(negativeEye);
+    Matrix_2D R = Functions::getRotationalMatrix(l, r, u);
+    Matrix_2D V = R * T;
+    //V.print();
+    return V;
+}
+int main() {
+    Point eye(0.0, 0.0, 50.0);
+    Point look(5.0, 10.0, 0.0);
+    Point up(0.0, 1.0, 0.0);
+
+    Matrix_2D viewT = viewTransformation(eye, look, up);
+
+
     return 0;
 }
