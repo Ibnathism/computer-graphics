@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 
-
+#define PI 3.1416
 class Point {
 public:
     double x,y,z;
@@ -127,6 +127,9 @@ public:
 
 class Functions {
 public:
+    static double convertToRadian(double angle) {
+        return angle * (PI/180.0);
+    }
     static Matrix_2D getIdentityMatrix(int nRows, int nColumns) {
         Matrix_2D temp(nRows, nColumns);
         for (int i = 0, j=0; i < nRows && j < nColumns; ++i, ++j) {
@@ -157,6 +160,15 @@ public:
 
         return identity;
     }
+    static Matrix_2D getProjectionMatrix(double t, double r, double near, double far) {
+        Matrix_2D temp(4, 4);
+        temp.m[0][0] = near/r;
+        temp.m[1][1] = near/t;
+        temp.m[2][2] = -((far+near)/(far-near));
+        temp.m[2][3] = -((2*far*near)/(far-near));
+        temp.m[3][2] = -1;
+        return temp;
+    }
 
 
 };
@@ -171,8 +183,16 @@ Matrix_2D viewTransformation(Point eye, Point look, Point up) {
     Matrix_2D T = Functions::getTranslationMatrix(negativeEye);
     Matrix_2D R = Functions::getRotationalMatrix(l, r, u);
     Matrix_2D V = R * T;
-    //V.print();
     return V;
+}
+
+Matrix_2D projectionTransformation(double fovY, double aspectRatio, double near, double far) {
+    double fovX = fovY * aspectRatio;
+    double t = near * tan(Functions::convertToRadian(fovY/2));
+    double r = near * tan(Functions::convertToRadian(fovX/2));
+    Matrix_2D P = Functions::getProjectionMatrix(t, r, near, far);
+    return P;
+
 }
 int main() {
     Point eye(0.0, 0.0, 50.0);
@@ -180,7 +200,15 @@ int main() {
     Point up(0.0, 1.0, 0.0);
 
     Matrix_2D viewT = viewTransformation(eye, look, up);
+    viewT.print();
 
+    double fovY = 80.0;
+    double aspectRatio = 1.0;
+    double near = 1.0;
+    double far = 100.0;
+
+    Matrix_2D projT = projectionTransformation(fovY, aspectRatio, near, far);
+    projT.print();
 
     return 0;
 }
