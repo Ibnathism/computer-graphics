@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 
-#define PI 3.1416
+#define PI (2*acos(0.0))
 class Point {
 public:
     double x,y,z;
@@ -122,6 +122,12 @@ public:
         }
     }
 
+    Point transformPoint(Point point) {
+        // result matrix = multiply this with columnMatrix(point)
+        // return a point which is (first column of result matrix/ w of result matrix)
+        return Point(0.0, 0.0, 0.0);
+    }
+
 
 };
 
@@ -129,6 +135,12 @@ class Functions {
 public:
     static double convertToRadian(double angle) {
         return angle * (PI/180.0);
+    }
+    static Point getRodrigues(double theta, Point x, Point a) {
+        Point third = a.crossMultiplication(x) * sin(convertToRadian(theta));
+        Point first = x * cos(convertToRadian(theta));
+        Point second = a * a.dotMultiplication(x) * (1-cos(convertToRadian(theta)));
+        return first + second + third;
     }
     static Matrix_2D getIdentityMatrix(int nRows, int nColumns) {
         Matrix_2D temp(nRows, nColumns);
@@ -142,6 +154,13 @@ public:
         identity.m[0][3] = point.x;
         identity.m[1][3] = point.y;
         identity.m[2][3] = point.z;
+        return identity;
+    }
+    static Matrix_2D getScalingMatrix(Point point) {
+        Matrix_2D identity = getIdentityMatrix(4, 4);
+        identity.m[0][0] = point.x;
+        identity.m[1][1] = point.y;
+        identity.m[2][2] = point.z;
         return identity;
     }
     static Matrix_2D getRotationalMatrix(Point l, Point r, Point u) {
@@ -200,7 +219,7 @@ int main() {
     Point up(0.0, 1.0, 0.0);
 
     Matrix_2D viewT = viewTransformation(eye, look, up);
-    viewT.print();
+    //viewT.print();
 
     double fovY = 80.0;
     double aspectRatio = 1.0;
@@ -208,7 +227,12 @@ int main() {
     double far = 100.0;
 
     Matrix_2D projT = projectionTransformation(fovY, aspectRatio, near, far);
-    projT.print();
+    //projT.print();
 
+    double theta = 90;
+    Point a(0.0, 0.0, 1.0);
+    Point x(1.0, 0.0, 0.0);
+    Point ans = Functions::getRodrigues(theta, x, a);
+    ans.print();
     return 0;
 }
