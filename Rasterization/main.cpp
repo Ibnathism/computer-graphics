@@ -3,8 +3,10 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <bits/stdc++.h>
 #include <sstream>
 #include <stack>
+#include <cstring>
 #define PI (2*acos(0.0))
 class Point {
 public:
@@ -153,6 +155,7 @@ public:
         temp.m[0][0] = point.x;
         temp.m[1][0] = point.y;
         temp.m[2][0] = point.z;
+        temp.m[3][0] = 1;
         return temp;
     }
     static Matrix_2D getTranslationMatrix(Point point) {
@@ -196,27 +199,18 @@ public:
     }
     static Point transformPoint(Point point, Matrix_2D &matrix2D) {
         Matrix_2D pointMatrix = alignPointInColumn(point);
+        //std::cout << "PointMatrix" << std::endl;
+        //pointMatrix.print();
         Matrix_2D temp = matrix2D * pointMatrix;
+        //std::cout << "Temp" << std::endl;
+        //temp.print();
         Point tempPoint(temp.m[0][0], temp.m[1][0], temp.m[2][0]);
         double corner = temp.m[temp.m.size()-1][temp.m[0].size()-1];
+        //std::cout << corner << std::endl;
         return tempPoint/corner;
     }
-    static Point readPoint(std::ifstream &infile) {
-        std::string str;
-        getline(infile, str);
-        std::vector<double> vec;
-        std::istringstream iss(str);
-        std::string token;
-        while (std::getline(iss, token, ' ')) {
-            vec.push_back(std::stod(token));
-        }
-        Point temp(vec[0], vec[1], vec[2]);
-        return temp;
-    }
-
 };
 
-class sp;
 
 Matrix_2D viewTransformation(Point eye, Point look, Point up) {
     Point l = look - eye;
@@ -240,96 +234,102 @@ Matrix_2D projectionTransformation(double fovY, double aspectRatio, double near,
 
 }
 int main() {
-//    std::ofstream stage1;
-//    stage1.open("stage1.txt");
-//    std::ofstream stage2;
-//    stage2.open("stage2.txt");
-//    std::ofstream stage3;
-//    stage3.open("stage3.txt");
-    std::ifstream infile("scene.txt");
-    std::string data;
+    std::fstream infile;
+    infile.open("scene.txt");
     if (!infile.is_open()) {
         std::cout << "Cant open file" << std::endl;
         return 0;
     }
     ///GluLookAt
-    Point eye = Functions::readPoint(infile);
-    Point look = Functions::readPoint(infile);
-    Point up = Functions::readPoint(infile);
+    Point eye, look, up;
+    infile >> eye.x >> eye.y >> eye.z;
+    infile >> look.x >> look.y >> look.z;
+    infile >> up.x >> up.y >> up.z;
     Matrix_2D viewT = viewTransformation(eye, look, up);
     //viewT.print();
 
     ///GluPerspective
-    std::string str;
-    getline(infile, str);
-    std::vector<double> vec;
-    std::istringstream iss(str);
-    std::string token;
-    while (std::getline(iss, token, ' ')) {
-        vec.push_back(std::stod(token));
-    }
+    double fovY, aspectRatio, near, far;
 
-    double fovY = vec[0];
-    double aspectRatio = vec[1];
-    double near = vec[2];
-    double far = vec[3];
+    infile >> fovY >> aspectRatio >> near >> far;
 
     Matrix_2D projT = projectionTransformation(fovY, aspectRatio, near, far);
     //projT.print();
 
     std::stack<Matrix_2D> stack;
+    std::stack<std::stack<Matrix_2D>> all;
     Matrix_2D I(Functions::getIdentityMatrix(4, 4));
     stack.push(I);
+    std::string strCommand;
+    while (true) {
 
+        infile >> strCommand;
+        std::cout << strCommand << std::endl;
+        if (strCommand=="triangle") {
+            Point triangleCorners[3];
+            //Point transformerCorners[3];
+            std::cout << "Found triangle" << std::endl;
+            for (int i = 0; i < 3; ++i) {
+                infile >> triangleCorners[i].x >> triangleCorners[i].y >> triangleCorners[i].z;
+                //std::cout << "Point" << std::endl;
+                //triangleCorners[i].print();
+                Point model = Functions::transformPoint(triangleCorners[i], stack.top());
+                std::cout << "model" << std::endl;
+                model.print();
+                Point view = Functions::transformPoint(model, viewT);
+                Point proj = Functions::transformPoint(view, projT);
+                std::cout << "view" << std::endl;
+                view.print();
+                std::cout << "projection" << std::endl;
+                proj.print();
 
-//    while (true) {
-//        std::string strCommand;
-//
-//        getline(infile, strCommand);
-//        //std::cout << strCommand << std::endl;
-//        //std::cout << (strCommand=="end") << std::endl;
-//
-//        if (strCommand=="triangle") {
-//            //input three points
-//            Point triangleCorners[3];
-//            Point transformerCorners[3];
-//            std::cout << "Found triangle" << std::endl;
-//            for (int i = 0; i < 3; ++i) {
-//                triangleCorners[i] = Functions::readPoint(infile);
-//                triangleCorners[i].print();
-//                //transformerCorners[i] = Functions::transformPoint(triangleCorners[i], stack.top());
-//                //transformerCorners[i].print();
-//            }
-//
-//                // P’ <- transformPoint(S.top,P)
-//                // output P’
-//        } else if ((strCommand=="translate") == 0) {
-//            //input translation amounts
-//            // generate the corresponding translation matrix T
-//            // S.push(product(S.top,T))
-//        } else if ((strCommand=="scale") == 0) {
-//
-//        } else if ((strCommand=="rotate") == 0) {
-//
-//        } else if ((strCommand=="push") == 0) {
-//
-//        } else if ((strCommand=="pop") == 0) {
-//
-//        } else if ((strCommand=="end") == 0) {
-//            std::cout << "Found end" << std::endl;
-//            break;
-//        }
-//    }
-//
-//    double theta = 90;
-//    Point a(0.0, 0.0, 1.0);
-//    Point x(1.0, 0.0, 0.0);
-//    Point ans = Functions::getRodrigues(theta, x, a);
-//    //ans.print();
+            }
+        } else if (strCommand=="translate") {
+            std::cout << "Found translate" << std::endl;
+            Point translationAmount;
+            infile >> translationAmount.x >> translationAmount.y >> translationAmount.z;
+            Matrix_2D transMat = Functions::getTranslationMatrix(translationAmount);
+            stack.push(stack.top()*transMat);
+        } else if (strCommand=="scale") {
+            std::cout << "Found scale" << std::endl;
+            Point scaleAmount;//= Functions::readPoint(infile);
+            infile >> scaleAmount.x >> scaleAmount.y >> scaleAmount.z;
+            Matrix_2D scaleMat = Functions::getScalingMatrix(scaleAmount);
+            stack.push(stack.top()*scaleMat);
+        } else if (strCommand=="rotate") {
+            std::cout << "Found rotate" << std::endl;
+            double rotationAngle;// = vecRotate[0];
+            Point rotationPoint;//(vecRotate[1], vecRotate[2], vecRotate[3]);
+            infile >> rotationAngle >> rotationPoint.x >> rotationPoint.y >> rotationPoint.z;
+            rotationPoint = rotationPoint.normalizePoint();
 
-//    stage3.close();
-//    stage2.close();
-//    stage1.close();
+            Point xAxis(1, 0, 0);
+            Point yAxis(0, 1, 0);
+            Point zAxis(0, 0, 1);
+
+            Point firstColumn = Functions::getRodrigues(rotationAngle, xAxis, rotationPoint);
+            Point secondColumn = Functions::getRodrigues(rotationAngle, yAxis, rotationPoint);
+            Point thirdColumn = Functions::getRodrigues(rotationAngle, zAxis, rotationPoint);
+
+            Point rotationL(-firstColumn.z, -secondColumn.z, -thirdColumn.z);
+            Point rotationR(firstColumn.x, secondColumn.x, thirdColumn.x);
+            Point rotationU(firstColumn.y, secondColumn.y, thirdColumn.y);
+
+            Matrix_2D rotateMat = Functions::getRotationalMatrix(rotationL, rotationR, rotationU);
+            stack.push(stack.top()*rotateMat);
+
+        } else if (strCommand=="push") {
+            std::cout << "Found Push" << std::endl;
+            all.push(stack);
+        } else if (strCommand=="pop") {
+            std::cout << "Found Pop" << std::endl;
+            stack = all.top();
+            all.pop();
+        } else if (strCommand=="end") {
+            std::cout << "Found end" << std::endl;
+            break;
+        }
+    }
 
     infile.close();
     return 0;
