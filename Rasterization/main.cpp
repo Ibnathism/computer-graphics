@@ -3,10 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <string>
-#include <bits/stdc++.h>
-#include <sstream>
 #include <stack>
-#include <cstring>
 #define PI (2*acos(0.0))
 class Point {
 public:
@@ -199,14 +196,9 @@ public:
     }
     static Point transformPoint(Point point, Matrix_2D &matrix2D) {
         Matrix_2D pointMatrix = alignPointInColumn(point);
-        //std::cout << "PointMatrix" << std::endl;
-        //pointMatrix.print();
         Matrix_2D temp = matrix2D * pointMatrix;
-        //std::cout << "Temp" << std::endl;
-        //temp.print();
         Point tempPoint(temp.m[0][0], temp.m[1][0], temp.m[2][0]);
         double corner = temp.m[temp.m.size()-1][temp.m[0].size()-1];
-        //std::cout << corner << std::endl;
         return tempPoint/corner;
     }
 };
@@ -292,14 +284,14 @@ int main() {
             stack.push(stack.top()*transMat);
         } else if (strCommand=="scale") {
             std::cout << "Found scale" << std::endl;
-            Point scaleAmount;//= Functions::readPoint(infile);
+            Point scaleAmount;
             infile >> scaleAmount.x >> scaleAmount.y >> scaleAmount.z;
             Matrix_2D scaleMat = Functions::getScalingMatrix(scaleAmount);
             stack.push(stack.top()*scaleMat);
         } else if (strCommand=="rotate") {
             std::cout << "Found rotate" << std::endl;
-            double rotationAngle;// = vecRotate[0];
-            Point rotationPoint;//(vecRotate[1], vecRotate[2], vecRotate[3]);
+            double rotationAngle;
+            Point rotationPoint;
             infile >> rotationAngle >> rotationPoint.x >> rotationPoint.y >> rotationPoint.z;
             rotationPoint = rotationPoint.normalizePoint();
 
