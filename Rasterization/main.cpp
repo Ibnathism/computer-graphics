@@ -1,7 +1,10 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
-
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <stack>
 #define PI (2*acos(0.0))
 class Point {
 public:
@@ -122,11 +125,7 @@ public:
         }
     }
 
-    Point transformPoint(Point point) {
-        // result matrix = multiply this with columnMatrix(point)
-        // return a point which is (first column of result matrix/ w of result matrix)
-        return Point(0.0, 0.0, 0.0);
-    }
+
 
 
 };
@@ -147,6 +146,13 @@ public:
         for (int i = 0, j=0; i < nRows && j < nColumns; ++i, ++j) {
             temp.m[i][j] = 1;
         }
+        return temp;
+    }
+    static Matrix_2D alignPointInColumn(Point point) {
+        Matrix_2D temp(4, 1);
+        temp.m[0][0] = point.x;
+        temp.m[1][0] = point.y;
+        temp.m[2][0] = point.z;
         return temp;
     }
     static Matrix_2D getTranslationMatrix(Point point) {
@@ -188,9 +194,29 @@ public:
         temp.m[3][2] = -1;
         return temp;
     }
-
+    static Point transformPoint(Point point, Matrix_2D &matrix2D) {
+        Matrix_2D pointMatrix = alignPointInColumn(point);
+        Matrix_2D temp = matrix2D * pointMatrix;
+        Point tempPoint(temp.m[0][0], temp.m[1][0], temp.m[2][0]);
+        double corner = temp.m[temp.m.size()-1][temp.m[0].size()-1];
+        return tempPoint/corner;
+    }
+    static Point readPoint(std::ifstream &infile) {
+        std::string str;
+        getline(infile, str);
+        std::vector<double> vec;
+        std::istringstream iss(str);
+        std::string token;
+        while (std::getline(iss, token, ' ')) {
+            vec.push_back(std::stod(token));
+        }
+        Point temp(vec[0], vec[1], vec[2]);
+        return temp;
+    }
 
 };
+
+class sp;
 
 Matrix_2D viewTransformation(Point eye, Point look, Point up) {
     Point l = look - eye;
@@ -214,25 +240,97 @@ Matrix_2D projectionTransformation(double fovY, double aspectRatio, double near,
 
 }
 int main() {
-    Point eye(0.0, 0.0, 50.0);
-    Point look(5.0, 10.0, 0.0);
-    Point up(0.0, 1.0, 0.0);
-
+//    std::ofstream stage1;
+//    stage1.open("stage1.txt");
+//    std::ofstream stage2;
+//    stage2.open("stage2.txt");
+//    std::ofstream stage3;
+//    stage3.open("stage3.txt");
+    std::ifstream infile("scene.txt");
+    std::string data;
+    if (!infile.is_open()) {
+        std::cout << "Cant open file" << std::endl;
+        return 0;
+    }
+    ///GluLookAt
+    Point eye = Functions::readPoint(infile);
+    Point look = Functions::readPoint(infile);
+    Point up = Functions::readPoint(infile);
     Matrix_2D viewT = viewTransformation(eye, look, up);
     //viewT.print();
 
-    double fovY = 80.0;
-    double aspectRatio = 1.0;
-    double near = 1.0;
-    double far = 100.0;
+    ///GluPerspective
+    std::string str;
+    getline(infile, str);
+    std::vector<double> vec;
+    std::istringstream iss(str);
+    std::string token;
+    while (std::getline(iss, token, ' ')) {
+        vec.push_back(std::stod(token));
+    }
+
+    double fovY = vec[0];
+    double aspectRatio = vec[1];
+    double near = vec[2];
+    double far = vec[3];
 
     Matrix_2D projT = projectionTransformation(fovY, aspectRatio, near, far);
     //projT.print();
 
-    double theta = 90;
-    Point a(0.0, 0.0, 1.0);
-    Point x(1.0, 0.0, 0.0);
-    Point ans = Functions::getRodrigues(theta, x, a);
-    ans.print();
+    std::stack<Matrix_2D> stack;
+    Matrix_2D I(Functions::getIdentityMatrix(4, 4));
+    stack.push(I);
+
+
+//    while (true) {
+//        std::string strCommand;
+//
+//        getline(infile, strCommand);
+//        //std::cout << strCommand << std::endl;
+//        //std::cout << (strCommand=="end") << std::endl;
+//
+//        if (strCommand=="triangle") {
+//            //input three points
+//            Point triangleCorners[3];
+//            Point transformerCorners[3];
+//            std::cout << "Found triangle" << std::endl;
+//            for (int i = 0; i < 3; ++i) {
+//                triangleCorners[i] = Functions::readPoint(infile);
+//                triangleCorners[i].print();
+//                //transformerCorners[i] = Functions::transformPoint(triangleCorners[i], stack.top());
+//                //transformerCorners[i].print();
+//            }
+//
+//                // P’ <- transformPoint(S.top,P)
+//                // output P’
+//        } else if ((strCommand=="translate") == 0) {
+//            //input translation amounts
+//            // generate the corresponding translation matrix T
+//            // S.push(product(S.top,T))
+//        } else if ((strCommand=="scale") == 0) {
+//
+//        } else if ((strCommand=="rotate") == 0) {
+//
+//        } else if ((strCommand=="push") == 0) {
+//
+//        } else if ((strCommand=="pop") == 0) {
+//
+//        } else if ((strCommand=="end") == 0) {
+//            std::cout << "Found end" << std::endl;
+//            break;
+//        }
+//    }
+//
+//    double theta = 90;
+//    Point a(0.0, 0.0, 1.0);
+//    Point x(1.0, 0.0, 0.0);
+//    Point ans = Functions::getRodrigues(theta, x, a);
+//    //ans.print();
+
+//    stage3.close();
+//    stage2.close();
+//    stage1.close();
+
+    infile.close();
     return 0;
 }
