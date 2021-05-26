@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <stack>
+#include <iomanip>
 #define PI (2*acos(0.0))
 class Point {
 public:
@@ -76,7 +77,7 @@ public:
     }
 
     void print() const {
-        std::cout << '(' << this->x <<", " << this->y << ", " << this->z << ')' << std::endl;
+        std::cout << this->x <<" " << this->y << " " << this->z << std::endl;
     }
 };
 
@@ -248,6 +249,15 @@ int main() {
     Matrix_2D projT = projectionTransformation(fovY, aspectRatio, near, far);
     //projT.print();
 
+    std::ofstream modelOut, viewOut, projOut;
+    modelOut.open("stage1.txt");
+    modelOut << std::setprecision(7) << std::fixed;
+    viewOut.open("stage2.txt");
+    viewOut << std::setprecision(7) << std::fixed;
+    projOut.open("stage3.txt");
+    projOut << std::setprecision(7) << std::fixed;
+
+
     std::stack<Matrix_2D> stack;
     std::stack<std::stack<Matrix_2D>> all;
     Matrix_2D I(Functions::getIdentityMatrix(4, 4));
@@ -261,21 +271,27 @@ int main() {
             Point triangleCorners[3];
             //Point transformerCorners[3];
             std::cout << "Found triangle" << std::endl;
-            for (int i = 0; i < 3; ++i) {
-                infile >> triangleCorners[i].x >> triangleCorners[i].y >> triangleCorners[i].z;
+            for (auto & triangleCorner : triangleCorners) {
+                infile >> triangleCorner.x >> triangleCorner.y >> triangleCorner.z;
                 //std::cout << "Point" << std::endl;
                 //triangleCorners[i].print();
-                Point model = Functions::transformPoint(triangleCorners[i], stack.top());
+                Point model = Functions::transformPoint(triangleCorner, stack.top());
                 std::cout << "model" << std::endl;
                 model.print();
+                modelOut << model.x << " " << model.y << " " << model.z << std::endl;
                 Point view = Functions::transformPoint(model, viewT);
                 Point proj = Functions::transformPoint(view, projT);
                 std::cout << "view" << std::endl;
                 view.print();
+                viewOut << view.x << " " << view.y << " " << view.z << std::endl;
                 std::cout << "projection" << std::endl;
                 proj.print();
+                projOut << proj.x << " " << proj.y << " " << proj.z << std::endl;
 
             }
+            modelOut << std::endl;
+            viewOut << std::endl;
+            projOut << std::endl;
         } else if (strCommand=="translate") {
             std::cout << "Found translate" << std::endl;
             Point translationAmount;
@@ -324,5 +340,8 @@ int main() {
     }
 
     infile.close();
+    modelOut.close();
+    viewOut.close();
+    projOut.close();
     return 0;
 }
