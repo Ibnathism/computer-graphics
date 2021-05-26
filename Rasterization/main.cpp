@@ -38,6 +38,8 @@ public:
         bottomY = bottomLimitY + dy/2;
         rightX = rightLimitX - dx/2;
 
+        std::cout << topY << ":::::" << leftX << ":::::" << bottomY << ":::::" << rightX << std::endl;
+
         this->zMax = rearLimitZ;
         for (int i = 0; i < screenWidth; ++i) {
             for (int j = 0; j < screenHeight; ++j) {
