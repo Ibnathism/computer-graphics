@@ -6,6 +6,7 @@
 #include <stack>
 #include <iomanip>
 #define PI (2*acos(0.0))
+
 class Point {
 public:
     double x,y,z;
@@ -204,7 +205,6 @@ public:
     }
 };
 
-
 Matrix_2D viewTransformation(Point eye, Point look, Point up) {
     Point l = look - eye;
     l = l.normalizePoint();
@@ -226,13 +226,8 @@ Matrix_2D projectionTransformation(double fovY, double aspectRatio, double near,
     return P;
 
 }
-int main() {
-    std::fstream infile;
-    infile.open("scene.txt");
-    if (!infile.is_open()) {
-        std::cout << "Cant open file" << std::endl;
-        return 0;
-    }
+
+void modelingTransformation(std::fstream &infile, std::ofstream &modelOut, std::ofstream &viewOut, std::ofstream &projOut) {
     ///GluLookAt
     Point eye, look, up;
     infile >> eye.x >> eye.y >> eye.z;
@@ -243,21 +238,11 @@ int main() {
 
     ///GluPerspective
     double fovY, aspectRatio, near, far;
-
     infile >> fovY >> aspectRatio >> near >> far;
-
     Matrix_2D projT = projectionTransformation(fovY, aspectRatio, near, far);
     //projT.print();
 
-    std::ofstream modelOut, viewOut, projOut;
-    modelOut.open("stage1.txt");
-    modelOut << std::setprecision(7) << std::fixed;
-    viewOut.open("stage2.txt");
-    viewOut << std::setprecision(7) << std::fixed;
-    projOut.open("stage3.txt");
-    projOut << std::setprecision(7) << std::fixed;
-
-
+    ///Modeling Transformation
     std::stack<Matrix_2D> stack;
     std::stack<std::stack<Matrix_2D>> all;
     Matrix_2D I(Functions::getIdentityMatrix(4, 4));
@@ -338,7 +323,25 @@ int main() {
             break;
         }
     }
+}
 
+int main() {
+    std::fstream infile;
+    infile.open("scene.txt");
+    if (!infile.is_open()) {
+        std::cout << "Cant open file" << std::endl;
+        return 0;
+    }
+
+    std::ofstream modelOut, viewOut, projOut;
+    modelOut.open("stage1.txt");
+    modelOut << std::setprecision(7) << std::fixed;
+    viewOut.open("stage2.txt");
+    viewOut << std::setprecision(7) << std::fixed;
+    projOut.open("stage3.txt");
+    projOut << std::setprecision(7) << std::fixed;
+
+    modelingTransformation(infile, modelOut, viewOut, projOut);
     infile.close();
     modelOut.close();
     viewOut.close();
