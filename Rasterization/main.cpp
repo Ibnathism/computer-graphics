@@ -7,10 +7,46 @@
 #include <iomanip>
 #include "bitmap_image.h"
 #define PI (2*acos(0.0))
-int screenWidth, screenHeight;
-double leftLimitX, rightLimitX, bottomLimitY, topLimitY, frontLimitZ, rearLimitZ;
 
 
+class Screen {
+public:
+    int screenWidth{}, screenHeight{};
+    double leftLimitX{}, rightLimitX{}, bottomLimitY{}, topLimitY{}, frontLimitZ{}, rearLimitZ{};
+    double dx{}, dy{}, topY{}, leftX{}, bottomY{}, rightX{}, zMax{};
+    std::vector<std::vector<double>> zBuffer;
+
+    void allocateBuffer(int width, int height) {
+        for (int i = 0; i < zBuffer.size(); ++i) {
+            zBuffer[i].clear();
+        }
+        zBuffer.clear();
+        this->screenWidth = width;
+        this->screenHeight = height;
+        std::vector<double> row(width, 0);
+        for (int i = 0; i < height; ++i) {
+            zBuffer.push_back(row);
+        }
+    }
+
+    void initializeBuffers() {
+        dx = (rightLimitX-leftLimitX)/screenWidth;
+        dy = (topLimitY-bottomLimitY)/screenHeight;
+
+        topY = topLimitY - dy/2;
+        leftX = leftLimitX + dx/2;
+        bottomY = bottomLimitY + dy/2;
+        rightX = rightLimitX - dx/2;
+
+        this->zMax = rearLimitZ;
+        for (int i = 0; i < screenWidth; ++i) {
+            for (int j = 0; j < screenHeight; ++j) {
+                zBuffer[i][j] = zMax;
+            }
+        }
+    }
+
+};
 class Point {
 public:
     double x,y,z;
@@ -143,12 +179,61 @@ public:
         point[0] = a;
         point[1] = b;
         point[2] = c;
+        int min = 0;
+        int max = 255;
+        color[0] = min + ( std::rand() % ( max - min + 1 ) );
+        color[1] = min + ( std::rand() % ( max - min + 1 ) );
+        color[2] = min + ( std::rand() % ( max - min + 1 ) );
     }
 
     void print() {
         for (Point p:point) {
             p.print();
         }
+    }
+
+    double getTopScanline(Screen &screen) {
+        double max = std::max(this->point[0].y, this->point[1].y);
+        max = std::max(max, this->point[2].y);
+        double topRow = screen.topY;
+        if (max > topRow) return topRow;
+        while (max < topRow) {
+            topRow = topRow - screen.dy;
+        }
+        return topRow + screen.dy;
+    }
+
+    double getBottomScanline(Screen &screen) {
+        double min = std::min(this->point[0].y, this->point[1].y);
+        min = std::min(min, this->point[2].y);
+        double bottomRow = screen.bottomY;
+        if (min < bottomRow) return bottomRow;
+        while (min > bottomRow) {
+            bottomRow = bottomRow + screen.dy;
+        }
+        return bottomRow - screen.dy;
+    }
+
+    double getLeftColumn(Screen &screen) {
+        double min = std::min(this->point[0].x, this->point[1].x);
+        min = std::min(min, this->point[2].x);
+        double leftCol = screen.leftX;
+        if (min < leftCol) return leftCol;
+        while (min > leftCol) {
+            leftCol = leftCol + screen.dx;
+        }
+        return leftCol - screen.dx;
+    }
+
+    double getRightColumn(Screen &screen) {
+        double max = std::max(this->point[0].x, this->point[1].x);
+        max = std::max(max, this->point[2].x);
+        double rightCol = screen.rightX;
+        if (max > rightCol) return rightCol;
+        while (max < rightCol) {
+            rightCol = rightCol - screen.dx;
+        }
+        return rightCol + screen.dx;
     }
 };
 
@@ -363,6 +448,7 @@ void modelingTransformation() {
     projOut.close();
 }
 
+Screen screen;
 std::vector<Triangle> triangles;
 
 void readData() {
@@ -374,12 +460,14 @@ void readData() {
         return;
     }
 
-    configFile >> screenWidth >> screenHeight;
-    configFile >> leftLimitX;
-    rightLimitX = -leftLimitX;
-    configFile >> bottomLimitY;
-    topLimitY = -bottomLimitY;
-    configFile >> frontLimitZ >> rearLimitZ;
+    int width, height;
+
+    configFile >> width >> height;
+    configFile >> screen.leftLimitX;
+    screen.rightLimitX = -screen.leftLimitX;
+    configFile >> screen.bottomLimitY;
+    screen.topLimitY = -screen.bottomLimitY;
+    configFile >> screen.frontLimitZ >> screen.rearLimitZ;
 
     while (!stage3File.eof()){
         Point a, b, c;
@@ -389,42 +477,50 @@ void readData() {
         Triangle t(a, b, c);
         triangles.push_back(t);
     }
-
+    screen.allocateBuffer(width, height);
     configFile.close();
     stage3File.close();
 }
 
-void initializeBuffers() {
-    double dx = (rightLimitX-leftLimitX)/screenWidth;
-    double dy = (topLimitY-bottomLimitY)/screenHeight;
+void clip() {
 
-    double topY = topLimitY - dy/2;
-    double leftX = leftLimitX + dx/2;
-
-    std::cout << topY << " " << leftX << std::endl;
-
-    double zBuffer[screenWidth][screenHeight];
-    double zMax = rearLimitZ;
-    for (int i = 0; i < screenWidth; ++i) {
-        for (int j = 0; j < screenHeight; ++j) {
-            zBuffer[i][j] = zMax;
-        }
-    }
 }
 
+
 void applyProcedure(bitmap_image &image) {
-    for (Triangle t: triangles) {
-        for (int i = t.point[0].x; i < 100; ++i) {
-            image.set_pixel(i, t.point[0].y, 255, 255, 0);
+    for (int i = 0; i < triangles.size()-1; ++i) {
+        Triangle t = triangles[i];
+        std::cout << "Triangle" << std::endl;
+        t.print();
+        //Find top_scanline and bottom_scanline after necessary clipping
+        double topScanline = t.getTopScanline(screen);
+        double bottomScanline = t.getBottomScanline(screen);
+        double leftColumn = t.getLeftColumn(screen);
+        double rightColumn = t.getRightColumn(screen);
+        std::cout << topScanline << " -------row------ " << bottomScanline << std::endl;
+        std::cout << leftColumn << " -----col----- " << rightColumn << std::endl;
+
+        //for row_no from top_scanline to bottom_scanline
+        for (double row = topScanline; row > bottomScanline; row = row - screen.dy) {
+            //Find left_intersecting_column and right_intersecting_column after necessary clipping
+            //For col_no from left_intersecting_column to right_intersecting_column
+            for (double col = leftColumn; col < rightColumn ; col = col + screen.dx) {
+                image.set_pixel(row, col, t.color[0], t.color[1], t.color[2]);
+                //Calculate z values
+                //Compare with z-buffer and z_front_limit and update if required
+                //Update pixel information if required
+            }
+
+
         }
 
     }
 }
 void clippingAndScanConversion() {
     readData();
-    initializeBuffers();
+    screen.initializeBuffers();
 
-    bitmap_image image(screenWidth, screenHeight);
+    bitmap_image image(screen.screenWidth, screen.screenHeight);
     applyProcedure(image);
     image.save_image("test.bmp");
 
@@ -432,7 +528,7 @@ void clippingAndScanConversion() {
 
 
 int main() {
-    //modelingTransformation();
+    modelingTransformation();
     clippingAndScanConversion();
     return 0;
 }
