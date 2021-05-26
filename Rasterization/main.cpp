@@ -5,7 +5,11 @@
 #include <string>
 #include <stack>
 #include <iomanip>
+#include "bitmap_image.h"
 #define PI (2*acos(0.0))
+int screenWidth, screenHeight;
+double leftLimitX, rightLimitX, bottomLimitY, topLimitY, frontLimitZ, rearLimitZ;
+
 
 class Point {
 public:
@@ -131,6 +135,23 @@ public:
 
 };
 
+class Triangle {
+public:
+    Point point[3];
+    int color[3];
+    Triangle(Point a, Point b, Point c) {
+        point[0] = a;
+        point[1] = b;
+        point[2] = c;
+    }
+
+    void print() {
+        for (Point p:point) {
+            p.print();
+        }
+    }
+};
+
 class Functions {
 public:
     static double convertToRadian(double angle) {
@@ -227,7 +248,20 @@ Matrix_2D projectionTransformation(double fovY, double aspectRatio, double near,
 
 }
 
-void modelingTransformation(std::fstream &infile, std::ofstream &modelOut, std::ofstream &viewOut, std::ofstream &projOut) {
+void modelingTransformation() {
+    std::fstream infile;
+    infile.open("scene.txt");
+    if (!infile.is_open()) {
+        std::cout << "Cant open file" << std::endl;
+        return;
+    }
+    std::ofstream modelOut, viewOut, projOut;
+    modelOut.open("stage1.txt");
+    modelOut << std::setprecision(7) << std::fixed;
+    viewOut.open("stage2.txt");
+    viewOut << std::setprecision(7) << std::fixed;
+    projOut.open("stage3.txt");
+    projOut << std::setprecision(7) << std::fixed;
     ///GluLookAt
     Point eye, look, up;
     infile >> eye.x >> eye.y >> eye.z;
@@ -323,28 +357,72 @@ void modelingTransformation(std::fstream &infile, std::ofstream &modelOut, std::
             break;
         }
     }
-}
-
-int main() {
-    std::fstream infile;
-    infile.open("scene.txt");
-    if (!infile.is_open()) {
-        std::cout << "Cant open file" << std::endl;
-        return 0;
-    }
-
-    std::ofstream modelOut, viewOut, projOut;
-    modelOut.open("stage1.txt");
-    modelOut << std::setprecision(7) << std::fixed;
-    viewOut.open("stage2.txt");
-    viewOut << std::setprecision(7) << std::fixed;
-    projOut.open("stage3.txt");
-    projOut << std::setprecision(7) << std::fixed;
-
-    modelingTransformation(infile, modelOut, viewOut, projOut);
     infile.close();
     modelOut.close();
     viewOut.close();
     projOut.close();
+}
+
+std::vector<Triangle> triangles;
+
+void readData() {
+    std::fstream configFile, stage3File;
+    configFile.open("config.txt");
+    stage3File.open("stage3.txt");
+    if (!configFile.is_open() || !stage3File.is_open()) {
+        std::cout << "Cant open file" << std::endl;
+        return;
+    }
+
+    configFile >> screenWidth >> screenHeight;
+    configFile >> leftLimitX;
+    rightLimitX = -leftLimitX;
+    configFile >> bottomLimitY;
+    topLimitY = -bottomLimitY;
+    configFile >> frontLimitZ >> rearLimitZ;
+
+    while (!stage3File.eof()){
+        Point a, b, c;
+        stage3File >> a.x >> a.y >> a.z;
+        stage3File >> b.x >> b.y >> b.z;
+        stage3File >> c.x >> c.y >> c.z;
+        Triangle t(a, b, c);
+        triangles.push_back(t);
+    }
+
+    configFile.close();
+    stage3File.close();
+}
+
+void initializeBuffers() {
+    double dx = (rightLimitX-leftLimitX)/screenWidth;
+    double dy = (topLimitY-bottomLimitY)/screenHeight;
+
+    double topY = topLimitY - dy/2;
+    double leftX = leftLimitX + dx/2;
+
+    std::cout << topY << " " << leftX << std::endl;
+
+    double zBuffer[screenWidth][screenHeight];
+    double zMax = rearLimitZ - frontLimitZ;
+    for (int i = 0; i < screenWidth; ++i) {
+        for (int j = 0; j < screenHeight; ++j) {
+            zBuffer[i][j] = zMax;
+        }
+    }
+}
+void clippingAndScanConversion() {
+    readData();
+    initializeBuffers();
+
+    bitmap_image image(screenWidth, screenHeight);
+    image.save_image("test.bmp");
+
+}
+
+
+int main() {
+    //modelingTransformation();
+    clippingAndScanConversion();
     return 0;
 }
