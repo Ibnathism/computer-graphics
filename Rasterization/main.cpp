@@ -404,11 +404,20 @@ void initializeBuffers() {
     std::cout << topY << " " << leftX << std::endl;
 
     double zBuffer[screenWidth][screenHeight];
-    double zMax = rearLimitZ - frontLimitZ;
+    double zMax = rearLimitZ;
     for (int i = 0; i < screenWidth; ++i) {
         for (int j = 0; j < screenHeight; ++j) {
             zBuffer[i][j] = zMax;
         }
+    }
+}
+
+void applyProcedure(bitmap_image &image) {
+    for (Triangle t: triangles) {
+        for (int i = t.point[0].x; i < 100; ++i) {
+            image.set_pixel(i, t.point[0].y, 255, 255, 0);
+        }
+
     }
 }
 void clippingAndScanConversion() {
@@ -416,6 +425,7 @@ void clippingAndScanConversion() {
     initializeBuffers();
 
     bitmap_image image(screenWidth, screenHeight);
+    applyProcedure(image);
     image.save_image("test.bmp");
 
 }
