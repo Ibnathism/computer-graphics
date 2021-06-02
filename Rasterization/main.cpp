@@ -504,7 +504,7 @@ void readData() {
 }
 
 void applyProcedure(bitmap_image &image) {
-    for (int i = 0; i < triangles.size()-1; ++i) {
+    for (int i = 0; i < triangles.size(); ++i) {
         Triangle t = triangles[i];
         //std::cout << "Triangle " << i << std::endl;
         //t.print();
@@ -534,27 +534,45 @@ void applyProcedure(bitmap_image &image) {
             double tempXb = t.point[0].x + (t.point[2].x-t.point[0].x)*((r-t.point[0].y)/(t.point[2].y-t.point[0].y));
             double tempXc = t.point[1].x + (t.point[1].x-t.point[2].x)*((r-t.point[1].y)/(t.point[1].y-t.point[2].y));
 
-            //std::cout << "za---" << tempZa << "---zb---" << tempZb << "---zc---" << tempZc << std::endl;
-            //std::cout << "xa---" << tempXa << "---xb---" << tempXb << "---xc---" << tempXc << std::endl;
+            std::cout << "za---" << tempZa << "---zb---" << tempZb << "---zc---" << tempZc << std::endl;
+            std::cout << "xa---" << tempXa << "---xb---" << tempXb << "---xc---" << tempXc << std::endl;
 
             Point a, b;
             a.y = r;
             b.y = r;
-            if (std::isnan(tempZc)) {
+            if (std::isnan(tempZc) || std::isinf(tempXc)) {
                 a.x = tempXa;
                 a.z = tempZa;
                 b.x = tempXb;
                 b.z = tempZb;
-            } else if (std::isnan(tempZb)) {
+            } else if (std::isnan(tempZb) || std::isinf(tempXb)) {
                 a.x = tempXa;
                 a.z = tempZa;
                 b.x = tempXc;
                 b.z = tempZc;
-            } else {
+            } else if (std::isnan(tempZa) || std::isinf(tempXa)) {
                 a.x = tempXc;
                 a.z = tempZc;
                 b.x = tempXb;
                 b.z = tempZb;
+            } else {
+                if (tempXa < leftColumn || tempXa > rightColumn) {
+                    a.x = tempXc;
+                    a.z = tempZc;
+                    b.x = tempXb;
+                    b.z = tempZb;
+                }
+                else if (tempXb < leftColumn || tempXb > rightColumn) {
+                    a.x = tempXa;
+                    a.z = tempZa;
+                    b.x = tempXc;
+                    b.z = tempZc;
+                } else {
+                    a.x = tempXa;
+                    a.z = tempZa;
+                    b.x = tempXb;
+                    b.z = tempZb;
+                }
             }
 
             int xLeft, xRight;
@@ -572,7 +590,7 @@ void applyProcedure(bitmap_image &image) {
                 double c = screen.leftX + col * screen.dx;
                 double zp = a.z + (b.z-a.z)*((c-xLeft)/(xRight-xLeft));
                 //double zpPlusOne = zp + screen.dx * ((b.z-a.z)/(b.x-a.x));
-                if(zp < screen.zBuffer[row][col]) {
+                if(zp < screen.zBuffer[row][col] && zp > screen.frontLimitZ && zp < screen.rearLimitZ) {
                     screen.zBuffer[row][col] = zp;
                     image.set_pixel(col, row, t.myColor.red, t.myColor.green, t.myColor.blue);
                 }
