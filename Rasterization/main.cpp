@@ -8,6 +8,20 @@
 #include "bitmap_image.h"
 #define PI (2*acos(0.0))
 
+class Color {
+public:
+    int red, green, blue;
+    Color() {
+        this->red = 255;
+        this->blue = 255;
+        this->green = 255;
+    }
+    Color(int red, int green, int blue) {
+        this->red = red;
+        this->blue = blue;
+        this->green = green;
+    }
+};
 
 class Screen {
 public:
@@ -15,7 +29,7 @@ public:
     double leftLimitX{}, rightLimitX{}, bottomLimitY{}, topLimitY{}, frontLimitZ{}, rearLimitZ{};
     double dx{}, dy{}, topY{}, leftX{}, bottomY{}, rightX{}, zMax{};
     std::vector<std::vector<double>> zBuffer;
-    std::vector<std::vector<double>> intensityBuffer;
+    //std::vector<std::vector<Color>> intensityBuffer;
 
     void allocateBuffer(int width, int height) {
         for (int i = 0; i < zBuffer.size(); ++i) {
@@ -25,9 +39,15 @@ public:
         this->screenWidth = width;
         this->screenHeight = height;
         std::vector<double> row(width, 0);
+        //Color color(255, 255, 255);
         for (int i = 0; i < height; ++i) {
             zBuffer.push_back(row);
         }
+//        for (int i = 0; i < intensityBuffer.size(); ++i) {
+//            for (int j = 0; j < intensityBuffer.; ++j) {
+//
+//            }
+//        }
     }
 
     void initializeBuffers() {
@@ -42,9 +62,15 @@ public:
         std::cout << topY << ":::::" << leftX << ":::::" << bottomY << ":::::" << rightX << std::endl;
 
         this->zMax = rearLimitZ;
+        Color c(255, 255, 255);
         for (int i = 0; i < screenWidth; ++i) {
             for (int j = 0; j < screenHeight; ++j) {
+
                 zBuffer[i][j] = zMax;
+
+                //intensityBuffer[i][j].red = c.red;
+                //intensityBuffer[i][j].green = c.green;
+                //intensityBuffer[i][j].blue = c.blue;
             }
         }
     }
@@ -177,16 +203,21 @@ public:
 class Triangle {
 public:
     Point point[3];
-    int color[3];
+    Color myColor;
+    //int color[3];
     Triangle(Point a, Point b, Point c) {
         point[0] = a;
         point[1] = b;
         point[2] = c;
         int min = 0;
         int max = 255;
-        color[0] = min + ( std::rand() % ( max - min + 1 ) );
-        color[1] = min + ( std::rand() % ( max - min + 1 ) );
-        color[2] = min + ( std::rand() % ( max - min + 1 ) );
+//        color[0] = min + ( std::rand() % ( max - min + 1 ) );
+//        color[1] = min + ( std::rand() % ( max - min + 1 ) );
+//        color[2] = min + ( std::rand() % ( max - min + 1 ) );
+
+        myColor.red = min + ( std::rand() % ( max - min + 1 ) );
+        myColor.green = min + ( std::rand() % ( max - min + 1 ) );
+        myColor.blue = min + ( std::rand() % ( max - min + 1 ) );
         //std::cout << "colors " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
     }
 
@@ -493,33 +524,33 @@ void readData() {
 void applyProcedure(bitmap_image &image) {
     for (int i = 0; i < triangles.size(); ++i) {
         Triangle t = triangles[i];
-        std::cout << "Triangle" << std::endl;
-        t.print();
-        //Find top_scanline and bottom_scanline after necessary clipping
+        std::cout << "Triangle " << i << std::endl;
+        //t.print();
+
         double topScanline = t.getTopScanline(screen);
         double bottomScanline = t.getBottomScanline(screen);
         double leftColumn = t.getLeftColumn(screen);
         double rightColumn = t.getRightColumn(screen);
 
-        double topRowNo = (screen.topY-topScanline)/screen.dy;
-        double bottomRowNo = (screen.topY-bottomScanline)/screen.dy;
-        double leftColNo = (leftColumn-screen.leftX)/screen.dx;
-        double rightColNo = (rightColumn-screen.leftX)/screen.dx;
+        int topRowNo = (int)((screen.topY-topScanline)/screen.dy);
+        int bottomRowNo = (int)((screen.topY-bottomScanline)/screen.dy);
+        int leftColNo = (int)((leftColumn-screen.leftX)/screen.dx);
+        int rightColNo = (int)((rightColumn-screen.leftX)/screen.dx);
 
         std::cout << topRowNo << " -------row------ " << bottomRowNo << std::endl;
         std::cout << leftColNo << " -----col----- " << rightColNo << std::endl;
 
         //for row_no from top_scanline to bottom_scanline
-        for (double row = topRowNo; row > bottomRowNo; row = row + 1) {
-            //Find left_intersecting_column and right_intersecting_column after necessary clipping
-            //For col_no from left_intersecting_column to right_intersecting_column
-            //calculate Za and Zb
-            double tempZa = t.point[0].z + (t.point[1].z-t.point[0].z)*((row-t.point[0].y)/(t.point[1].y-t.point[0].y));
-            double tempZb = t.point[0].z + (t.point[2].z-t.point[0].z)*((row-t.point[0].y)/(t.point[2].y-t.point[0].y));
-            double tempZc = t.point[1].z + (t.point[2].z-t.point[1].z)*((row-t.point[1].y)/(t.point[2].y-t.point[1].y));
-            double tempXa = t.point[0].x + (t.point[1].x-t.point[0].x)*((row-t.point[0].y)/(t.point[1].y-t.point[0].y));
-            double tempXb = t.point[0].x + (t.point[2].x-t.point[0].x)*((row-t.point[0].y)/(t.point[2].y-t.point[0].y));
-            double tempXc = t.point[1].x + (t.point[2].x-t.point[1].x)*((row-t.point[1].y)/(t.point[2].y-t.point[1].y));
+        for (int row = topRowNo; row < bottomRowNo; row = row + 1) {
+
+            double r = screen.topY - row * screen.dy;
+
+            double tempZa = t.point[0].z + (t.point[1].z-t.point[0].z)*((r-t.point[0].y)/(t.point[1].y-t.point[0].y));
+            double tempZb = t.point[0].z + (t.point[2].z-t.point[0].z)*((r-t.point[0].y)/(t.point[2].y-t.point[0].y));
+            double tempZc = t.point[1].z + (t.point[1].z-t.point[2].z)*((r-t.point[1].y)/(t.point[1].y-t.point[2].y));
+            double tempXa = t.point[0].x + (t.point[1].x-t.point[0].x)*((r-t.point[0].y)/(t.point[1].y-t.point[0].y));
+            double tempXb = t.point[0].x + (t.point[2].x-t.point[0].x)*((r-t.point[0].y)/(t.point[2].y-t.point[0].y));
+            double tempXc = t.point[1].x + (t.point[1].x-t.point[2].x)*((r-t.point[1].y)/(t.point[1].y-t.point[2].y));
 
 
             //std::cout << "za---" << tempZa << "---zb---" << tempZb << "---zc---" << tempZc << std::endl;
@@ -528,8 +559,8 @@ void applyProcedure(bitmap_image &image) {
             //if (std::isinf(xa)) std::cout << "xa is inf" << std::endl;
 
             Point a, b;
-            a.y = row;
-            b.y = row;
+            a.y = r;
+            b.y = r;
             if (std::isnan(tempZc)) {
                 a.x = tempXa;
                 a.z = tempZa;
@@ -546,24 +577,19 @@ void applyProcedure(bitmap_image &image) {
                 b.x = tempXb;
                 b.z = tempZb;
             }
-//            std::cout << "---a---" << std::endl;
-//            a.print();
-//            std::cout << "---b---" << std::endl;
-//            b.print();
-            double zp = a.z + (b.z-a.z)*((leftColumn-a.x)/(b.x-a.x));
-            //std::cout << "---zp---" << zp << std::endl;
-            for (double col = leftColNo; col < rightColNo ; col = col + 1) {
+            std::cout << "a" << std::endl;
+            a.print();
+            std::cout << "b" << std::endl;
+            b.print();
 
-                double zpPlusOne = zp + screen.dx * ((b.z-a.z)/(b.x-a.x));
-                if(zpPlusOne < screen.zBuffer[row][col]) {
-                    screen.zBuffer[row][col] = zpPlusOne;
-                    image.set_pixel(row, col, t.color[0], t.color[1], t.color[2]);
+            for (int col = leftColNo; col < rightColNo ; col = col + 1) {
+                double c = screen.leftX + col * screen.dx;
+                double zp = a.z + (b.z-a.z)*((c-a.x)/(b.x-a.x));
+                //double zpPlusOne = zp + screen.dx * ((b.z-a.z)/(b.x-a.x));
+                if(zp < screen.zBuffer[row][col]) {
+                    screen.zBuffer[row][col] = zp;
+                    image.set_pixel(col, row, t.myColor.red, t.myColor.green, t.myColor.blue);
                 }
-                //std::cout << "---Zp+1---" << zpPlusOne << std::endl;
-
-                //Calculate z values
-                //Compare with z-buffer and z_front_limit and update if required
-                //Update pixel information if required
             }
 
 
@@ -574,7 +600,6 @@ void applyProcedure(bitmap_image &image) {
 void clippingAndScanConversion() {
     readData();
     screen.initializeBuffers();
-
     bitmap_image image(screen.screenWidth, screen.screenHeight);
     applyProcedure(image);
     image.save_image("test.bmp");
