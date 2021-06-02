@@ -1,12 +1,19 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
-#include <fstream>
 #include <string>
 #include <stack>
 #include <iomanip>
+#include <random>
 #include "bitmap_image.h"
 #define PI (2*acos(0.0))
+
+int getRandom(double a, double b) {
+    std::random_device randomDevice;
+    std::mt19937 mt19937(randomDevice());
+    std:: uniform_real_distribution<double> distribution(a, b);
+    return (int)distribution(mt19937);
+}
 
 class Color {
 public:
@@ -29,7 +36,6 @@ public:
     double leftLimitX{}, rightLimitX{}, bottomLimitY{}, topLimitY{}, frontLimitZ{}, rearLimitZ{};
     double dx{}, dy{}, topY{}, leftX{}, bottomY{}, rightX{}, zMax{};
     std::vector<std::vector<double>> zBuffer;
-    //std::vector<std::vector<Color>> intensityBuffer;
 
     void allocateBuffer(int width, int height) {
         for (int i = 0; i < zBuffer.size(); ++i) {
@@ -39,43 +45,31 @@ public:
         this->screenWidth = width;
         this->screenHeight = height;
         std::vector<double> row(width, 0);
-        //Color color(255, 255, 255);
         for (int i = 0; i < height; ++i) {
             zBuffer.push_back(row);
         }
-//        for (int i = 0; i < intensityBuffer.size(); ++i) {
-//            for (int j = 0; j < intensityBuffer.; ++j) {
-//
-//            }
-//        }
     }
 
     void initializeBuffers() {
-        dx = (rightLimitX-leftLimitX)/screenWidth;
-        dy = (topLimitY-bottomLimitY)/screenHeight;
+        dx = (rightLimitX - leftLimitX) / screenWidth;
+        dy = (topLimitY - bottomLimitY) / screenHeight;
 
-        topY = topLimitY - dy/2;
-        leftX = leftLimitX + dx/2;
-        bottomY = bottomLimitY + dy/2;
-        rightX = rightLimitX - dx/2;
+        topY = topLimitY - dy / 2;
+        leftX = leftLimitX + dx / 2;
+        bottomY = bottomLimitY + dy / 2;
+        rightX = rightLimitX - dx / 2;
 
-        std::cout << topY << ":::::" << leftX << ":::::" << bottomY << ":::::" << rightX << std::endl;
+        //std::cout << topY << ":::::" << leftX << ":::::" << bottomY << ":::::" << rightX << std::endl;
 
         this->zMax = rearLimitZ;
-        Color c(255, 255, 255);
         for (int i = 0; i < screenWidth; ++i) {
             for (int j = 0; j < screenHeight; ++j) {
-
                 zBuffer[i][j] = zMax;
-
-                //intensityBuffer[i][j].red = c.red;
-                //intensityBuffer[i][j].green = c.green;
-                //intensityBuffer[i][j].blue = c.blue;
             }
         }
     }
-
 };
+
 class Point {
 public:
     double x,y,z;
@@ -194,30 +188,21 @@ public:
             std::cout << "]" << std::endl;
         }
     }
-
-
-
-
 };
 
 class Triangle {
 public:
     Point point[3];
     Color myColor;
-    //int color[3];
     Triangle(Point a, Point b, Point c) {
         point[0] = a;
         point[1] = b;
         point[2] = c;
         int min = 0;
         int max = 255;
-//        color[0] = min + ( std::rand() % ( max - min + 1 ) );
-//        color[1] = min + ( std::rand() % ( max - min + 1 ) );
-//        color[2] = min + ( std::rand() % ( max - min + 1 ) );
-
-        myColor.red = min + ( std::rand() % ( max - min + 1 ) );
-        myColor.green = min + ( std::rand() % ( max - min + 1 ) );
-        myColor.blue = min + ( std::rand() % ( max - min + 1 ) );
+        myColor.red = getRandom((double ) min, (double ) max);
+        myColor.green =  getRandom((double ) min, (double ) max);
+        myColor.blue =  getRandom((double ) min, (double ) max);
         //std::cout << "colors " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
     }
 
@@ -235,7 +220,7 @@ public:
         while (max < topRow) {
             topRow = topRow - screen.dy;
         }
-        return topRow + screen.dy;
+        return topRow;
     }
 
     double getBottomScanline(Screen &screen) {
@@ -246,7 +231,7 @@ public:
         while (min > bottomRow) {
             bottomRow = bottomRow + screen.dy;
         }
-        return bottomRow - screen.dy;
+        return bottomRow;
     }
 
     double getLeftColumn(Screen &screen) {
@@ -257,7 +242,7 @@ public:
         while (min > leftCol) {
             leftCol = leftCol + screen.dx;
         }
-        return leftCol - screen.dx;
+        return leftCol;
     }
 
     double getRightColumn(Screen &screen) {
@@ -268,7 +253,7 @@ public:
         while (max < rightCol) {
             rightCol = rightCol - screen.dx;
         }
-        return rightCol + screen.dx;
+        return rightCol;
     }
 };
 
@@ -345,7 +330,7 @@ public:
         return tempPoint/corner;
     }
 
-    //static int getRow()
+
 };
 
 Matrix_2D viewTransformation(Point eye, Point look, Point up) {
@@ -407,26 +392,25 @@ void modelingTransformation() {
     while (true) {
 
         infile >> strCommand;
-        std::cout << strCommand << std::endl;
+        //std::cout << strCommand << std::endl;
         if (strCommand=="triangle") {
             Point triangleCorners[3];
-            //Point transformerCorners[3];
-            std::cout << "Found triangle" << std::endl;
+            //std::cout << "Found triangle" << std::endl;
             for (auto & triangleCorner : triangleCorners) {
                 infile >> triangleCorner.x >> triangleCorner.y >> triangleCorner.z;
                 //std::cout << "Point" << std::endl;
                 //triangleCorners[i].print();
                 Point model = Functions::transformPoint(triangleCorner, stack.top());
-                std::cout << "model" << std::endl;
-                model.print();
+                //std::cout << "model" << std::endl;
+                //model.print();
                 modelOut << model.x << " " << model.y << " " << model.z << std::endl;
                 Point view = Functions::transformPoint(model, viewT);
                 Point proj = Functions::transformPoint(view, projT);
-                std::cout << "view" << std::endl;
-                view.print();
+                //std::cout << "view" << std::endl;
+                //view.print();
                 viewOut << view.x << " " << view.y << " " << view.z << std::endl;
-                std::cout << "projection" << std::endl;
-                proj.print();
+                //std::cout << "projection" << std::endl;
+                //proj.print();
                 projOut << proj.x << " " << proj.y << " " << proj.z << std::endl;
 
             }
@@ -434,19 +418,19 @@ void modelingTransformation() {
             viewOut << std::endl;
             projOut << std::endl;
         } else if (strCommand=="translate") {
-            std::cout << "Found translate" << std::endl;
+            //std::cout << "Found translate" << std::endl;
             Point translationAmount;
             infile >> translationAmount.x >> translationAmount.y >> translationAmount.z;
             Matrix_2D transMat = Functions::getTranslationMatrix(translationAmount);
             stack.push(stack.top()*transMat);
         } else if (strCommand=="scale") {
-            std::cout << "Found scale" << std::endl;
+            //std::cout << "Found scale" << std::endl;
             Point scaleAmount;
             infile >> scaleAmount.x >> scaleAmount.y >> scaleAmount.z;
             Matrix_2D scaleMat = Functions::getScalingMatrix(scaleAmount);
             stack.push(stack.top()*scaleMat);
         } else if (strCommand=="rotate") {
-            std::cout << "Found rotate" << std::endl;
+            //std::cout << "Found rotate" << std::endl;
             double rotationAngle;
             Point rotationPoint;
             infile >> rotationAngle >> rotationPoint.x >> rotationPoint.y >> rotationPoint.z;
@@ -468,14 +452,14 @@ void modelingTransformation() {
             stack.push(stack.top()*rotateMat);
 
         } else if (strCommand=="push") {
-            std::cout << "Found Push" << std::endl;
+            //std::cout << "Found Push" << std::endl;
             all.push(stack);
         } else if (strCommand=="pop") {
-            std::cout << "Found Pop" << std::endl;
+            //std::cout << "Found Pop" << std::endl;
             stack = all.top();
             all.pop();
         } else if (strCommand=="end") {
-            std::cout << "Found end" << std::endl;
+            //std::cout << "Found end" << std::endl;
             break;
         }
     }
@@ -519,28 +503,26 @@ void readData() {
     stage3File.close();
 }
 
-
-
 void applyProcedure(bitmap_image &image) {
-    for (int i = 0; i < triangles.size(); ++i) {
+    for (int i = 0; i < triangles.size()-1; ++i) {
         Triangle t = triangles[i];
-        std::cout << "Triangle " << i << std::endl;
+        //std::cout << "Triangle " << i << std::endl;
         //t.print();
-
-        double topScanline = t.getTopScanline(screen);
-        double bottomScanline = t.getBottomScanline(screen);
-        double leftColumn = t.getLeftColumn(screen);
-        double rightColumn = t.getRightColumn(screen);
+        double topScanline, bottomScanline, leftColumn, rightColumn;
+        topScanline = t.getTopScanline(screen);
+        bottomScanline = t.getBottomScanline(screen);
+        //if (bottomScanline > topScanline) bottomScanline = screen.bottomY;
+        leftColumn = t.getLeftColumn(screen);
+        rightColumn = t.getRightColumn(screen);
+        //if (rightColumn < leftColumn) rightColumn = screen.rightX;
 
         int topRowNo = (int)((screen.topY-topScanline)/screen.dy);
         int bottomRowNo = (int)((screen.topY-bottomScanline)/screen.dy);
         int leftColNo = (int)((leftColumn-screen.leftX)/screen.dx);
         int rightColNo = (int)((rightColumn-screen.leftX)/screen.dx);
 
-        std::cout << topRowNo << " -------row------ " << bottomRowNo << std::endl;
-        std::cout << leftColNo << " -----col----- " << rightColNo << std::endl;
+        //std::cout << topRowNo << " -------row------ " << bottomRowNo << std::endl;
 
-        //for row_no from top_scanline to bottom_scanline
         for (int row = topRowNo; row < bottomRowNo; row = row + 1) {
 
             double r = screen.topY - row * screen.dy;
@@ -552,11 +534,8 @@ void applyProcedure(bitmap_image &image) {
             double tempXb = t.point[0].x + (t.point[2].x-t.point[0].x)*((r-t.point[0].y)/(t.point[2].y-t.point[0].y));
             double tempXc = t.point[1].x + (t.point[1].x-t.point[2].x)*((r-t.point[1].y)/(t.point[1].y-t.point[2].y));
 
-
             //std::cout << "za---" << tempZa << "---zb---" << tempZb << "---zc---" << tempZc << std::endl;
-            //if (std::isnan(tempZa)) std::cout << "za is nan" << std::endl;
             //std::cout << "xa---" << tempXa << "---xb---" << tempXb << "---xc---" << tempXc << std::endl;
-            //if (std::isinf(xa)) std::cout << "xa is inf" << std::endl;
 
             Point a, b;
             a.y = r;
@@ -577,14 +556,21 @@ void applyProcedure(bitmap_image &image) {
                 b.x = tempXb;
                 b.z = tempZb;
             }
-            std::cout << "a" << std::endl;
-            a.print();
-            std::cout << "b" << std::endl;
-            b.print();
 
-            for (int col = leftColNo; col < rightColNo ; col = col + 1) {
+            int xLeft, xRight;
+            if (a.x < b.x) {
+                xLeft = (int)((a.x-screen.leftX)/screen.dx);
+                xRight = (int)((b.x-screen.leftX)/screen.dx);
+            } else {
+                xRight = (int)((a.x-screen.leftX)/screen.dx);
+                xLeft = (int)((b.x-screen.leftX)/screen.dx);
+            }
+
+            if (xRight > screen.screenWidth) xRight = screen.screenWidth;
+            //std::cout << xLeft << " -----col----- " << xRight << std::endl;
+            for (int col = xLeft; col < xRight; ++col) {
                 double c = screen.leftX + col * screen.dx;
-                double zp = a.z + (b.z-a.z)*((c-a.x)/(b.x-a.x));
+                double zp = a.z + (b.z-a.z)*((c-xLeft)/(xRight-xLeft));
                 //double zpPlusOne = zp + screen.dx * ((b.z-a.z)/(b.x-a.x));
                 if(zp < screen.zBuffer[row][col]) {
                     screen.zBuffer[row][col] = zp;
@@ -597,18 +583,17 @@ void applyProcedure(bitmap_image &image) {
 
     }
 }
+
 void clippingAndScanConversion() {
     readData();
     screen.initializeBuffers();
     bitmap_image image(screen.screenWidth, screen.screenHeight);
     applyProcedure(image);
     image.save_image("test.bmp");
-
 }
 
-
 int main() {
-    //modelingTransformation();
+    modelingTransformation();
     clippingAndScanConversion();
     return 0;
 }
