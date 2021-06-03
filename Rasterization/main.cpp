@@ -36,6 +36,7 @@ public:
     double leftLimitX{}, rightLimitX{}, bottomLimitY{}, topLimitY{}, frontLimitZ{}, rearLimitZ{};
     double dx{}, dy{}, topY{}, leftX{}, bottomY{}, rightX{}, zMax{};
     std::vector<std::vector<double>> zBuffer;
+    std::vector<std::vector<int>> intensityBuffer;
 
     void allocateBuffer(int width, int height) {
         for (int i = 0; i < zBuffer.size(); ++i) {
@@ -45,8 +46,10 @@ public:
         this->screenWidth = width;
         this->screenHeight = height;
         std::vector<double> row(width, 0);
+        std::vector<int> intensity(width, 0);
         for (int i = 0; i < height; ++i) {
             zBuffer.push_back(row);
+            intensityBuffer.push_back(intensity);
         }
     }
 
@@ -65,6 +68,7 @@ public:
         for (int i = 0; i < screenWidth; ++i) {
             for (int j = 0; j < screenHeight; ++j) {
                 zBuffer[i][j] = zMax;
+                intensityBuffer[i][j] = 99999;
             }
         }
     }
@@ -506,7 +510,7 @@ void readData() {
 void applyProcedure(bitmap_image &image) {
     for (int i = 0; i < triangles.size(); ++i) {
         Triangle t = triangles[i];
-        //std::cout << "Triangle " << i << std::endl;
+        std::cout << "Triangle " << i  << " Color (" << t.myColor.red << ", " << t.myColor.green << ", " << t.myColor.blue << ")" << std::endl;
         //t.print();
         double topScanline, bottomScanline, leftColumn, rightColumn;
         topScanline = t.getTopScanline(screen);
@@ -518,12 +522,12 @@ void applyProcedure(bitmap_image &image) {
 
         int topRowNo = (int)((screen.topY-topScanline)/screen.dy);
         int bottomRowNo = (int)((screen.topY-bottomScanline)/screen.dy);
-        int leftColNo = (int)((leftColumn-screen.leftX)/screen.dx);
-        int rightColNo = (int)((rightColumn-screen.leftX)/screen.dx);
+        //int leftColNo = (int)((leftColumn-screen.leftX)/screen.dx);
+        //int rightColNo = (int)((rightColumn-screen.leftX)/screen.dx);
 
-        //std::cout << topRowNo << " -------row------ " << bottomRowNo << std::endl;
+        std::cout << topRowNo << " -------row------ " << bottomRowNo << std::endl;
 
-        for (int row = topRowNo; row < bottomRowNo; row = row + 1) {
+        for (int row = topRowNo; row < bottomRowNo; ++row) {
 
             double r = screen.topY - row * screen.dy;
 
@@ -534,64 +538,112 @@ void applyProcedure(bitmap_image &image) {
             double tempXb = t.point[0].x + (t.point[2].x-t.point[0].x)*((r-t.point[0].y)/(t.point[2].y-t.point[0].y));
             double tempXc = t.point[1].x + (t.point[1].x-t.point[2].x)*((r-t.point[1].y)/(t.point[1].y-t.point[2].y));
 
-            std::cout << "za---" << tempZa << "---zb---" << tempZb << "---zc---" << tempZc << std::endl;
-            std::cout << "xa---" << tempXa << "---xb---" << tempXb << "---xc---" << tempXc << std::endl;
+            //std::cout << "za---" << tempZa << "---zb---" << tempZb << "---zc---" << tempZc << std::endl;
+            //std::cout << "xa---" << tempXa << "---xb---" << tempXb << "---xc---" << tempXc << std::endl;
 
             Point a, b;
             a.y = r;
             b.y = r;
-            if (std::isnan(tempZc) || std::isinf(tempXc)) {
+            if (std::isnan(tempXc) || std::isinf(tempXc)) {
                 a.x = tempXa;
                 a.z = tempZa;
                 b.x = tempXb;
                 b.z = tempZb;
-            } else if (std::isnan(tempZb) || std::isinf(tempXb)) {
+            } else if (std::isnan(tempXb) || std::isinf(tempXb)) {
                 a.x = tempXa;
                 a.z = tempZa;
                 b.x = tempXc;
                 b.z = tempZc;
-            } else if (std::isnan(tempZa) || std::isinf(tempXa)) {
+            } else if (std::isnan(tempXa) || std::isinf(tempXa)) {
                 a.x = tempXc;
                 a.z = tempZc;
                 b.x = tempXb;
                 b.z = tempZb;
-            } else {
-                if (tempXa < leftColumn || tempXa > rightColumn) {
-                    a.x = tempXc;
-                    a.z = tempZc;
-                    b.x = tempXb;
-                    b.z = tempZb;
+            }
+            else {
+                if (tempXa == tempXb || tempXb == tempXc || tempXa == tempXc) {
+                    if (tempXa == tempXb || tempXb == tempXc) {
+                        a.x = tempXa;
+                        a.z = tempZa;
+                        b.x = tempXc;
+                        b.z = tempZc;
+                    } else if (tempXa == tempXc) {
+                        a.x = tempXa;
+                        a.z = tempZa;
+                        b.x = tempXb;
+                        b.z = tempZb;
+                    }
+                    if (tempXa == tempXb){
+
+                    }
                 }
-                else if (tempXb < leftColumn || tempXb > rightColumn) {
-                    a.x = tempXa;
-                    a.z = tempZa;
-                    b.x = tempXc;
-                    b.z = tempZc;
-                } else {
-                    a.x = tempXa;
-                    a.z = tempZa;
-                    b.x = tempXb;
-                    b.z = tempZb;
+                else {
+                    if (tempXa < leftColumn || tempXa > rightColumn) {
+                        a.x = tempXc;
+                        a.z = tempZc;
+                        b.x = tempXb;
+                        b.z = tempZb;
+                    }
+                    else if (tempXb < leftColumn || tempXb > rightColumn) {
+                        a.x = tempXa;
+                        a.z = tempZa;
+                        b.x = tempXc;
+                        b.z = tempZc;
+                    } else if (tempXc < leftColumn || tempXc > rightColumn) {
+                        a.x = tempXa;
+                        a.z = tempZa;
+                        b.x = tempXb;
+                        b.z = tempZb;
+                    }
                 }
             }
+
+//            if (a.x > b.x) {
+//                if (a.x > rightColumn) a.x = rightColumn;
+//                else if (b.x < leftColumn) b.x = leftColumn;
+//            } else if (a.x < b.x) {
+//                if (a.x < leftColumn) a.x = leftColumn;
+//                else if (b.x > rightColumn) b.x = rightColumn;
+//            }
+
+
+
+
 
             int xLeft, xRight;
             if (a.x < b.x) {
-                xLeft = (int)((a.x-screen.leftX)/screen.dx);
-                xRight = (int)((b.x-screen.leftX)/screen.dx);
+                xLeft = std::ceil((a.x-screen.leftX)/screen.dx);
+                xRight = std::ceil((b.x-screen.leftX)/screen.dx);
             } else {
-                xRight = (int)((a.x-screen.leftX)/screen.dx);
-                xLeft = (int)((b.x-screen.leftX)/screen.dx);
+                xRight = std::ceil((a.x-screen.leftX)/screen.dx);
+                xLeft = std::ceil((b.x-screen.leftX)/screen.dx);
+            }
+            if (xLeft > screen.screenWidth) xLeft = screen.screenWidth;
+            if (xRight > screen.screenWidth) xRight = screen.screenWidth;
+            if (xLeft > xRight) {
+                int temp = xLeft;
+                xLeft = xRight;
+                xRight = temp;
+            }
+            if (a.z > b.z) {
+                double tempZ = a.z;
+                a.z = b.z;
+                b.z = tempZ;
             }
 
-            if (xRight > screen.screenWidth) xRight = screen.screenWidth;
-            //std::cout << xLeft << " -----col----- " << xRight << std::endl;
+            a.z = std::round(a.z);
+            b.z = std::round(b.z);
+
+            std::cout << xLeft << " -----col----- " << xRight << std::endl;
             for (int col = xLeft; col < xRight; ++col) {
                 double c = screen.leftX + col * screen.dx;
                 double zp = a.z + (b.z-a.z)*((c-xLeft)/(xRight-xLeft));
                 //double zpPlusOne = zp + screen.dx * ((b.z-a.z)/(b.x-a.x));
-                if(zp < screen.zBuffer[row][col] && zp > screen.frontLimitZ && zp < screen.rearLimitZ) {
+                //std::cout << "Zp " << zp << std::endl;
+                if(zp < screen.zBuffer[row][col] && zp > screen.frontLimitZ) {
+                    //std::cout << "Z val updated from " << screen.zBuffer[row][col] << " to " << zp << std::endl;
                     screen.zBuffer[row][col] = zp;
+                    screen.intensityBuffer[row][col] = i;
                     image.set_pixel(col, row, t.myColor.red, t.myColor.green, t.myColor.blue);
                 }
             }
@@ -600,6 +652,8 @@ void applyProcedure(bitmap_image &image) {
         }
 
     }
+
+
 }
 
 void clippingAndScanConversion() {
