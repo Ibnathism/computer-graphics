@@ -570,9 +570,6 @@ void applyProcedure(bitmap_image &image) {
                         b.x = tempXb;
                         b.z = tempZb;
                     }
-                    if (tempXa == tempXb){
-
-                    }
                 }
                 else {
                     if (tempXa < leftColumn || tempXa > rightColumn) {
