@@ -195,16 +195,20 @@ class Triangle {
 public:
     Point point[3];
     Color myColor;
-    Triangle(Point a, Point b, Point c) {
+    double topScanline, bottomScanline, leftScanline, rightScanline;
+    int topRowNo, bottomRowNo, leftRowNo, rightRowNo;
+    Triangle(Point a, Point b, Point c, Screen &screen) {
         point[0] = a;
         point[1] = b;
         point[2] = c;
-        int min = 0;
-        int max = 255;
-        myColor.red = getRandom((double ) min, (double ) max);
-        myColor.green =  getRandom((double ) min, (double ) max);
-        myColor.blue =  getRandom((double ) min, (double ) max);
-        //std::cout << "colors " << color[0] << ", " << color[1] << ", " << color[2] << std::endl;
+        myColor.red = getRandom(0.0, 255.0);
+        myColor.green =  getRandom(0.0, 255.0);
+        myColor.blue =  getRandom(0.0, 255.0);
+        topScanline = getTopScanline(screen);
+        bottomScanline = getBottomScanline(screen);
+        leftScanline = getLeftColumn(screen);
+        rightScanline = getRightColumn(screen);
+
     }
 
     void print() {
@@ -496,7 +500,7 @@ void readData() {
         stage3File >> a.x >> a.y >> a.z;
         stage3File >> b.x >> b.y >> b.z;
         stage3File >> c.x >> c.y >> c.z;
-        Triangle t(a, b, c);
+        Triangle t(a, b, c, screen);
         triangles.push_back(t);
     }
     screen.allocateBuffer(width, height);
@@ -509,18 +513,9 @@ void applyProcedure(bitmap_image &image) {
         Triangle t = triangles[i];
         std::cout << "Triangle " << i  << " Color (" << t.myColor.red << ", " << t.myColor.green << ", " << t.myColor.blue << ")" << std::endl;
         //t.print();
-        double topScanline, bottomScanline, leftColumn, rightColumn;
-        topScanline = t.getTopScanline(screen);
-        bottomScanline = t.getBottomScanline(screen);
-        //if (bottomScanline > topScanline) bottomScanline = screen.bottomY;
-        leftColumn = t.getLeftColumn(screen);
-        rightColumn = t.getRightColumn(screen);
-        //if (rightColumn < leftColumn) rightColumn = screen.rightX;
 
-        int topRowNo = (int)((screen.topY-topScanline)/screen.dy);
-        int bottomRowNo = (int)((screen.topY-bottomScanline)/screen.dy);
-        //int leftColNo = (int)((leftColumn-screen.leftX)/screen.dx);
-        //int rightColNo = (int)((rightColumn-screen.leftX)/screen.dx);
+        int topRowNo = (int)((screen.topY-t.topScanline)/screen.dy);
+        int bottomRowNo = (int)((screen.topY-t.bottomScanline)/screen.dy);
 
         std::cout << topRowNo << " -------row------ " << bottomRowNo << std::endl;
 
@@ -531,12 +526,10 @@ void applyProcedure(bitmap_image &image) {
             double tempZa = t.point[0].z + (t.point[1].z-t.point[0].z)*((r-t.point[0].y)/(t.point[1].y-t.point[0].y));
             double tempZb = t.point[0].z + (t.point[2].z-t.point[0].z)*((r-t.point[0].y)/(t.point[2].y-t.point[0].y));
             double tempZc = t.point[1].z + (t.point[1].z-t.point[2].z)*((r-t.point[1].y)/(t.point[1].y-t.point[2].y));
+
             double tempXa = t.point[0].x + (t.point[1].x-t.point[0].x)*((r-t.point[0].y)/(t.point[1].y-t.point[0].y));
             double tempXb = t.point[0].x + (t.point[2].x-t.point[0].x)*((r-t.point[0].y)/(t.point[2].y-t.point[0].y));
             double tempXc = t.point[1].x + (t.point[1].x-t.point[2].x)*((r-t.point[1].y)/(t.point[1].y-t.point[2].y));
-
-            //std::cout << "za---" << tempZa << "---zb---" << tempZb << "---zc---" << tempZc << std::endl;
-            //std::cout << "xa---" << tempXa << "---xb---" << tempXb << "---xc---" << tempXc << std::endl;
 
             Point a, b;
             a.y = r;
@@ -559,34 +552,46 @@ void applyProcedure(bitmap_image &image) {
             }
             else {
                 if (tempXa == tempXb || tempXb == tempXc || tempXa == tempXc) {
-                    if (tempXa == tempXb || tempXb == tempXc) {
+                    if (tempXa == tempXb && (tempXc < t.leftScanline || tempXc > t.rightScanline)) {
                         a.x = tempXa;
                         a.z = tempZa;
                         b.x = tempXc;
                         b.z = tempZc;
-                    } else if (tempXa == tempXc) {
+                    } else if (tempXa == tempXc && (tempXb < t.leftScanline || tempXb > t.rightScanline)) {
+                        a.x = tempXa;
+                        a.z = tempZa;
+                        b.x = tempXb;
+                        b.z = tempZb;
+                    } else if (tempXb == tempXc && (tempXa < t.leftScanline || tempXa > t.rightScanline)) {
+                        a.x = tempXa;
+                        a.z = tempZa;
+                        b.x = tempXb;
+                        b.z = tempZb;
+                    } else if (tempXa == tempXb || tempXb == tempXc) {
+                        a.x = tempXa;
+                        a.z = tempZa;
+                        b.x = tempXc;
+                        b.z = tempZc;
+                    } else {
                         a.x = tempXa;
                         a.z = tempZa;
                         b.x = tempXb;
                         b.z = tempZb;
                     }
-                    if (tempXa == tempXb){
-
-                    }
                 }
                 else {
-                    if (tempXa < leftColumn || tempXa > rightColumn) {
+                    if (tempXa < t.leftScanline || tempXa > t.rightScanline) {
                         a.x = tempXc;
                         a.z = tempZc;
                         b.x = tempXb;
                         b.z = tempZb;
                     }
-                    else if (tempXb < leftColumn || tempXb > rightColumn) {
+                    else if (tempXb < t.leftScanline || tempXb > t.rightScanline) {
                         a.x = tempXa;
                         a.z = tempZa;
                         b.x = tempXc;
                         b.z = tempZc;
-                    } else if (tempXc < leftColumn || tempXc > rightColumn) {
+                    } else if (tempXc < t.leftScanline || tempXc > t.rightScanline) {
                         a.x = tempXa;
                         a.z = tempZa;
                         b.x = tempXb;
