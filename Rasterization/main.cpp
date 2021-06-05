@@ -39,10 +39,7 @@ public:
     std::vector<std::vector<int>> intensityBuffer;
 
     void allocateBuffer(int width, int height) {
-        for (int i = 0; i < zBuffer.size(); ++i) {
-            zBuffer[i].clear();
-        }
-        zBuffer.clear();
+
         this->screenWidth = width;
         this->screenHeight = height;
         std::vector<double> row(width, 0);
@@ -598,17 +595,6 @@ void applyProcedure(bitmap_image &image) {
                 }
             }
 
-//            if (a.x > b.x) {
-//                if (a.x > rightColumn) a.x = rightColumn;
-//                else if (b.x < leftColumn) b.x = leftColumn;
-//            } else if (a.x < b.x) {
-//                if (a.x < leftColumn) a.x = leftColumn;
-//                else if (b.x > rightColumn) b.x = rightColumn;
-//            }
-
-
-
-
 
             int xLeft, xRight;
             if (a.x < b.x) {
@@ -634,7 +620,7 @@ void applyProcedure(bitmap_image &image) {
             a.z = std::round(a.z);
             b.z = std::round(b.z);
 
-            std::cout << xLeft << " -----col----- " << xRight << std::endl;
+            //std::cout << xLeft << " -----col----- " << xRight << std::endl;
             for (int col = xLeft; col < xRight; ++col) {
                 double c = screen.leftX + col * screen.dx;
                 double zp = a.z + (b.z-a.z)*((c-xLeft)/(xRight-xLeft));
@@ -652,16 +638,44 @@ void applyProcedure(bitmap_image &image) {
         }
 
     }
-
-
 }
+
+void saveData() {
+    std::ofstream zBufferOut;
+    zBufferOut.open("z_buffer.txt");
+    zBufferOut << std::setprecision(6) << std::fixed;
+    int count = 1;
+    for (int i = 0; i < screen.zBuffer.size(); ++i) {
+        for (int j = 0; j < screen.zBuffer[i].size(); ++j) {
+            if (screen.zBuffer[i][j] < screen.zMax) {
+                zBufferOut << screen.zBuffer[i][j] << "    ";
+            } else {
+                zBufferOut << "            ";
+            }
+            count++;
+            if (count % 10 == 0) zBufferOut << std::endl;
+        }
+    }
+    zBufferOut.close();
+}
+
+void clearMemory(bitmap_image &image) {
+    image.clear();
+    for (int i = 0; i < screen.zBuffer.size(); ++i) {
+        screen.zBuffer[i].clear();
+    }
+    screen.zBuffer.clear();
+}
+
 
 void clippingAndScanConversion() {
     readData();
     screen.initializeBuffers();
     bitmap_image image(screen.screenWidth, screen.screenHeight);
     applyProcedure(image);
-    image.save_image("test.bmp");
+    image.save_image("output.bmp");
+    saveData();
+    clearMemory(image);
 }
 
 int main() {
