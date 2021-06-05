@@ -195,8 +195,6 @@ class Triangle {
 public:
     Point point[3];
     Color myColor;
-    double topScanline, bottomScanline, leftScanline, rightScanline;
-    int topRowNo, bottomRowNo, leftRowNo, rightRowNo;
     Triangle(Point a, Point b, Point c, Screen &screen) {
         point[0] = a;
         point[1] = b;
@@ -204,11 +202,6 @@ public:
         myColor.red = getRandom(0.0, 255.0);
         myColor.green =  getRandom(0.0, 255.0);
         myColor.blue =  getRandom(0.0, 255.0);
-        topScanline = getTopScanline(screen);
-        bottomScanline = getBottomScanline(screen);
-        leftScanline = getLeftColumn(screen);
-        rightScanline = getRightColumn(screen);
-
     }
 
     void print() {
@@ -513,9 +506,14 @@ void applyProcedure(bitmap_image &image) {
         Triangle t = triangles[i];
         std::cout << "Triangle " << i  << " Color (" << t.myColor.red << ", " << t.myColor.green << ", " << t.myColor.blue << ")" << std::endl;
         //t.print();
+        double topScanline, bottomScanline, leftScanline, rightScanline;
+        topScanline = t.getTopScanline(screen);
+        bottomScanline = t.getBottomScanline(screen);
+        leftScanline = t.getLeftColumn(screen);
+        rightScanline = t.getRightColumn(screen);
 
-        int topRowNo = (int)((screen.topY-t.topScanline)/screen.dy);
-        int bottomRowNo = (int)((screen.topY-t.bottomScanline)/screen.dy);
+        int topRowNo = (int)((screen.topY-topScanline)/screen.dy);
+        int bottomRowNo = (int)((screen.topY-bottomScanline)/screen.dy);
 
         std::cout << topRowNo << " -------row------ " << bottomRowNo << std::endl;
 
@@ -552,17 +550,17 @@ void applyProcedure(bitmap_image &image) {
             }
             else {
                 if (tempXa == tempXb || tempXb == tempXc || tempXa == tempXc) {
-                    if (tempXa == tempXb && (tempXc < t.leftScanline || tempXc > t.rightScanline)) {
+                    if (tempXa == tempXb && (tempXc < leftScanline || tempXc > rightScanline)) {
                         a.x = tempXa;
                         a.z = tempZa;
                         b.x = tempXc;
                         b.z = tempZc;
-                    } else if (tempXa == tempXc && (tempXb < t.leftScanline || tempXb > t.rightScanline)) {
+                    } else if (tempXa == tempXc && (tempXb < leftScanline || tempXb > rightScanline)) {
                         a.x = tempXa;
                         a.z = tempZa;
                         b.x = tempXb;
                         b.z = tempZb;
-                    } else if (tempXb == tempXc && (tempXa < t.leftScanline || tempXa > t.rightScanline)) {
+                    } else if (tempXb == tempXc && (tempXa < leftScanline || tempXa > rightScanline)) {
                         a.x = tempXa;
                         a.z = tempZa;
                         b.x = tempXb;
@@ -580,18 +578,18 @@ void applyProcedure(bitmap_image &image) {
                     }
                 }
                 else {
-                    if (tempXa < t.leftScanline || tempXa > t.rightScanline) {
+                    if (tempXa < leftScanline || tempXa > rightScanline) {
                         a.x = tempXc;
                         a.z = tempZc;
                         b.x = tempXb;
                         b.z = tempZb;
                     }
-                    else if (tempXb < t.leftScanline || tempXb > t.rightScanline) {
+                    else if (tempXb < leftScanline || tempXb > rightScanline) {
                         a.x = tempXa;
                         a.z = tempZa;
                         b.x = tempXc;
                         b.z = tempZc;
-                    } else if (tempXc < t.leftScanline || tempXc > t.rightScanline) {
+                    } else if (tempXc < leftScanline || tempXc > rightScanline) {
                         a.x = tempXa;
                         a.z = tempZa;
                         b.x = tempXb;
