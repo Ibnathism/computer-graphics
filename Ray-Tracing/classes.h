@@ -31,6 +31,8 @@ public:
 class Sphere : public Object {
 public:
     double radius;
+    Sphere() {
+    }
 
     Sphere(Point center, double radius) {
         reference_point = center;

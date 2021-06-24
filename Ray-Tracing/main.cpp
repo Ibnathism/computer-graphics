@@ -129,7 +129,7 @@ void display(){
     //drawAxes();
     baseFloor.draw();
     for (int i = 0; i < allSpheres.size(); ++i) {
-        allSpheres[i].draw(100, 100);
+        allSpheres[i].draw(99, 99);
     }
     glutSwapBuffers();
 }
@@ -172,6 +172,7 @@ void loadData() {
             allSpheres.push_back(sphere);
         }
     }
+    in.close();
 }
 void init(){
     clear();
