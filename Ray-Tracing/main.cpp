@@ -6,10 +6,6 @@ Point rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
 Point upDir = Point(0,0,1);
 Point lookDir = upDir.crossMultiplication(rightDir);
 
-//Point rightDir = Point(-0.23, 0.94, 0.25);
-//Point upDir = Point(0.95, 0.17, 0.23);
-//Point lookDir = upDir.crossMultiplication(rightDir);
-
 void keyboardListener(unsigned char key, int x,int y){
     double positiveAngle = 3.0;
     double negativeAngle = -3.0;
@@ -105,9 +101,7 @@ void specialKeyListener(int key, int x,int y){
 void mouseListener(int button, int state, int x, int y){
     switch(button){
         case GLUT_LEFT_BUTTON:
-            if(state == GLUT_DOWN){
-                fireBullets();
-            }
+            //........
             break;
         case GLUT_RIGHT_BUTTON:
             //........
@@ -128,11 +122,6 @@ void display(){
     glMatrixMode(GL_MODELVIEW);
     glColor3f(1, 1, 1);
     drawAxes();
-    //drawGun(18, 80, 6, 9, 1.2);
-    //glColor3f(0.5, 0.5, 0.5);
-    //drawSolidRectangle(Point(-100, 100, 200), Point(-100, -100, 200), Point(100, 100, 200), Point(100, -100, 200));
-    //glColor3f(1, 0, 0);
-    //drawBulletsOnPlane();
     glutSwapBuffers();
 }
 void animate(){
