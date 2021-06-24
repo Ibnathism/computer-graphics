@@ -1,4 +1,5 @@
 #include <GL/glut.h>
+#include<bits/stdc++.h>
 #include "functions.h"
 
 Point position = Point(150, 150, 50);
@@ -7,6 +8,9 @@ Point upDir = Point(0,0,1);
 Point lookDir = upDir.crossMultiplication(rightDir);
 
 Floor baseFloor;
+vector<Sphere> allSpheres;
+double pixels;
+int recursionLevel, objectCount;
 void keyboardListener(unsigned char key, int x,int y){
     double positiveAngle = 3.0;
     double negativeAngle = -3.0;
@@ -15,32 +19,32 @@ void keyboardListener(unsigned char key, int x,int y){
         case '1':
             lookDir = rotateOneAlongAnother(lookDir, upDir, positiveAngle);
             rightDir = lookDir.crossMultiplication(upDir);
-            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case '2':
             lookDir = rotateOneAlongAnother(lookDir, upDir, negativeAngle);
             rightDir = lookDir.crossMultiplication(upDir);
-            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case '3':
             lookDir = rotateOneAlongAnother(lookDir, rightDir, positiveAngle);
             upDir = rightDir.crossMultiplication(lookDir);
-            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case '4':
             lookDir = rotateOneAlongAnother(lookDir, rightDir, negativeAngle);
             upDir = rightDir.crossMultiplication(lookDir);
-            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case '5':
             rightDir = rotateOneAlongAnother(rightDir, lookDir, negativeAngle);
             upDir = rightDir.crossMultiplication(lookDir);
-            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case '6':
             rightDir = rotateOneAlongAnother(rightDir, lookDir, positiveAngle);
             upDir = rightDir.crossMultiplication(lookDir);
-            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case 'q':
             applyQRotation();
@@ -124,13 +128,50 @@ void display(){
     //glColor3f(1, 1, 1);
     //drawAxes();
     baseFloor.draw();
+    for (int i = 0; i < allSpheres.size(); ++i) {
+        allSpheres[i].draw(100, 100);
+    }
     glutSwapBuffers();
 }
 void animate(){
     glutPostRedisplay();
 }
 void loadData() {
-
+    fstream in;
+    in.open("scene.txt");
+    in >> recursionLevel;
+    in >> pixels;
+    in >> objectCount;
+    string type;
+    for (int i = 0; i < objectCount; ++i) {
+        in >> type;
+        Point center;
+        double radius;
+        double red, green, blue;
+        double ambient, diffuse, specular, reflection;
+        int shine;
+        vector<double> color;
+        vector<double> coefficients;
+        if (type == "sphere") {
+            in >> center.x >> center.y >> center.z;
+            in >> radius;
+            in >> red >> green >> blue;
+            color.push_back(red);
+            color.push_back(green);
+            color.push_back(blue);
+            in >> ambient >> diffuse >> specular >> reflection;
+            coefficients.push_back(ambient);
+            coefficients.push_back(diffuse);
+            coefficients.push_back(specular);
+            coefficients.push_back(reflection);
+            in >> shine;
+            Sphere sphere(center, radius);
+            sphere.setColor(color);
+            sphere.setCoefficient(coefficients);
+            sphere.setShine(shine);
+            allSpheres.push_back(sphere);
+        }
+    }
 }
 void init(){
     clear();
