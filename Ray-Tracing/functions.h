@@ -6,7 +6,7 @@
 #include <GL/glut.h>
 #include <iostream>
 #include <cmath>
-#include "point.h"
+#include "classes.h"
 #include <random>
 
 #define pi (2*acos(0.0))

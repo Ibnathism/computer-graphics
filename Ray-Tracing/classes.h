@@ -7,6 +7,10 @@
 
 #endif //RAY_TRACING_CLASSES_H
 #include "point.h"
+#include <vector>
+#define FAR 1000
+#define FLOOR_WIDTH 1000
+#define TILE_WIDTH 20
 
 using namespace std;
 class Object {
@@ -70,9 +74,29 @@ class Light {
 };
 
 class Floor : public Object {
-    double tileWidth;
-    Floor(double floorWidth, double tileWidth) {
-        reference_point = Point(-floorWidth/2, -floorWidth/2, 0);
-        tileWidth = tileWidth;
+public:
+    Floor() {
+        reference_point = Point(-FLOOR_WIDTH/2, -FLOOR_WIDTH/2, 0);
+    }
+
+    void draw() {
+        glPushMatrix();
+        double start = -FAR;
+        double end = FAR;
+        double color = 0;
+        for (int i = start; i < end; i = i + TILE_WIDTH) {
+            for (int j = start; j < end; j = j + TILE_WIDTH) {
+                glColor3f(color, color, color);
+                glBegin(GL_QUADS);{
+                    glVertex2f(i, j);
+                    glVertex2f(i, j+TILE_WIDTH);
+                    glVertex2f(i+TILE_WIDTH, j+TILE_WIDTH);
+                    glVertex2f(i+TILE_WIDTH, j);
+                }glEnd();
+                color = 1 - color;
+            }
+            color = 1 - color;
+        }
+        glPopMatrix();
     }
 };

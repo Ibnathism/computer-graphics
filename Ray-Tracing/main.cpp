@@ -1,12 +1,12 @@
 #include <GL/glut.h>
 #include "functions.h"
-#include "classes.h"
 
 Point position = Point(150, 150, 50);
 Point rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
 Point upDir = Point(0,0,1);
 Point lookDir = upDir.crossMultiplication(rightDir);
 
+Floor baseFloor;
 void keyboardListener(unsigned char key, int x,int y){
     double positiveAngle = 3.0;
     double negativeAngle = -3.0;
@@ -121,18 +121,24 @@ void display(){
     glLoadIdentity();
     gluLookAt(position.x, position.y, position.y, position.x+lookDir.x, position.y+lookDir.y, position.y+lookDir.z, upDir.x, upDir.y, upDir.z);
     glMatrixMode(GL_MODELVIEW);
-    glColor3f(1, 1, 1);
-    drawAxes();
+    //glColor3f(1, 1, 1);
+    //drawAxes();
+    baseFloor.draw();
     glutSwapBuffers();
 }
 void animate(){
     glutPostRedisplay();
 }
+void loadData() {
+
+}
 void init(){
     clear();
+    loadData();
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(80,	1,	1,	1000.0);
+
 }
 
 int main(int argc, char **argv){
