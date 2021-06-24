@@ -1,5 +1,6 @@
 #include <GL/glut.h>
 #include "functions.h"
+#include "classes.h"
 
 Point position = Point(150, 150, 50);
 Point rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
@@ -125,7 +126,6 @@ void display(){
     glutSwapBuffers();
 }
 void animate(){
-
     glutPostRedisplay();
 }
 void init(){
