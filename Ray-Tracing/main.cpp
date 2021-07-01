@@ -1,7 +1,11 @@
 #include <GL/glut.h>
 #include<bits/stdc++.h>
 #include "functions.h"
-
+#define WINDOW_HEIGHT 500
+#define WINDOW_WIDTH 500
+#define IMAGE_WIDTH 768
+#define IMAGE_HEIGHT 768
+#define VIEW_ANGLE 80
 Point position = Point(150, 150, 50);
 Point rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
 Point upDir = Point(0,0,1);
@@ -119,7 +123,30 @@ void mouseListener(int button, int state, int x, int y){
             break;
     }
 }
+void capture() {
+    double planeDistance = (WINDOW_HEIGHT/2.0)/tan((pi/180.0)*(VIEW_ANGLE/2.0));
+    Point topLeft_l = lookDir * planeDistance;
+    Point topLeft_r = rightDir * (WINDOW_WIDTH/2.0);
+    Point topLeft_u = upDir * (WINDOW_HEIGHT/2.0);
+    Point topLeft = position + topLeft_l - topLeft_r + topLeft_u;
 
+    double du = WINDOW_WIDTH/IMAGE_HEIGHT;
+    double dv = WINDOW_HEIGHT/IMAGE_HEIGHT;
+
+    ///DO we need this???
+    Point mid_r = rightDir * (0.5 * du);
+    Point mid_u = upDir * (0.5 * dv);
+    topLeft = topLeft + mid_r - mid_u;
+
+    for (int i = 0; i < IMAGE_WIDTH; ++i) {
+        for (int j = 0; j < IMAGE_HEIGHT; ++j) {
+
+        }
+    }
+
+
+
+}
 void display(){
     clear();
     glMatrixMode(GL_MODELVIEW);
@@ -130,7 +157,7 @@ void display(){
     //drawAxes();
     baseFloor.draw();
     for (int i = 0; i < allSpheres.size(); ++i) {
-        allSpheres[i].draw(99, 99);
+        allSpheres[i].draw(80, 80);
     }
     for (int i = 0; i < lightCount; ++i) {
         allLights[i].draw(7, 7);

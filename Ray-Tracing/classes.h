@@ -26,9 +26,47 @@ public:
     }
 
     Point(double x, double y, double z) : x(x), y(y), z(z) {}
-
+    Point operator-() const {
+        return {-this->x, -this->y, -this->z};
+    }
     Point negatePoint() const {
         return {-this->x, -this->y, -this->z};
+    }
+
+    Point operator+(Point &temp) const {
+        double ansX = this->x + temp.x;
+        double ansY = this->y + temp.y;
+        double ansZ = this->z + temp.z;
+        return {ansX, ansY, ansZ};
+    }
+
+    Point operator-(Point &temp) const {
+        double ansX = this->x - temp.x;
+        double ansY = this->y - temp.y;
+        double ansZ = this->z - temp.z;
+        return {ansX, ansY, ansZ};
+    }
+
+    Point operator*(double scalingConstant) const {
+        if (scalingConstant==0) return {0, 0,0};
+        double ansX = scalingConstant * this->x;
+        double ansY = scalingConstant * this->y;
+        double ansZ = scalingConstant * this->z;
+        return {ansX, ansY, ansZ};
+    }
+
+    Point operator/(double divisionConstant) const {
+        double ansX = this->x / divisionConstant;
+        double ansY = this->y / divisionConstant;
+        double ansZ = this->z / divisionConstant;
+        return {ansX, ansY, ansZ};
+    }
+
+    Point operator*(Point &temp) const {
+        double ansX = this->x * temp.x;
+        double ansY = this->y * temp.y;
+        double ansZ = this->z * temp.z;
+        return {ansX, ansY, ansZ};
     }
 
     double dotMultiplication(Point &temp) const {
@@ -63,6 +101,15 @@ public:
         double ansY = this->z*temp.x - this->x*temp.z;
         double ansZ = this->x*temp.y - this->y*temp.x;
         return {ansX, ansY, ansZ};
+    }
+
+    Point normalizePoint() const {
+        double temp = sqrt(this->x*this->x + this->y*this->y + this->z*this->z);
+        return *this/temp;
+    }
+
+    void print() const {
+        std::cout << this->x <<" " << this->y << " " << this->z << std::endl;
     }
 
 };

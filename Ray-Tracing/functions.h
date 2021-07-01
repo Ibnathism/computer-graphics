@@ -2,12 +2,13 @@
 #define OPEN_GL_FUNCTIONS_H
 
 #endif //OPEN_GL_FUNCTIONS_H
-
+#include <bits/stdc++.h>
 #include <GL/glut.h>
 #include <iostream>
 #include <cmath>
 #include "classes.h"
 #include <random>
+#include <vector>
 
 #define pi (2*acos(0.0))
 
@@ -36,9 +37,7 @@ void clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void capture() {
 
-}
 
 void drawAxes() {
     glBegin(GL_LINES);{
