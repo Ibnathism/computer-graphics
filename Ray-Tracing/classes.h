@@ -112,6 +112,7 @@ class Triangle : public Object {
 };
 
 class Light {
+public:
     Point position;
     vector<double> color;
     Light(Point position, vector<double> color) {

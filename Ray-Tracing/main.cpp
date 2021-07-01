@@ -9,8 +9,9 @@ Point lookDir = upDir.crossMultiplication(rightDir);
 
 Floor baseFloor;
 vector<Sphere> allSpheres;
+vector<Light> allLights;
 double pixels;
-int recursionLevel, objectCount;
+int recursionLevel, objectCount, lightCount;
 void keyboardListener(unsigned char key, int x,int y){
     double positiveAngle = 3.0;
     double negativeAngle = -3.0;
@@ -171,6 +172,19 @@ void loadData() {
             sphere.setShine(shine);
             allSpheres.push_back(sphere);
         }
+    }
+    in >> lightCount;
+    for (int i = 0; i < lightCount; ++i) {
+        Point lightPosition;
+        double redLight, greenLight, blueLight;
+        vector<double> lightColors;
+        in >> lightPosition.x >> lightPosition.y >> lightPosition.z;
+        in >> redLight >> greenLight >> blueLight;
+        lightColors.push_back(redLight);
+        lightColors.push_back(greenLight);
+        lightColors.push_back(blueLight);
+        Light light(lightPosition, lightColors);
+        allLights.push_back(light);
     }
     in.close();
 }
