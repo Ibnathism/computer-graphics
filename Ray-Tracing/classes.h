@@ -6,7 +6,6 @@
 #define RAY_TRACING_CLASSES_H
 
 #endif //RAY_TRACING_CLASSES_H
-#include "point.h"
 #include <vector>
 #define pi (2*acos(0.0))
 #define FAR 1000
@@ -14,10 +13,81 @@
 #define TILE_WIDTH 20
 
 using namespace std;
+
+class Point
+{
+public:
+    double x,y,z;
+
+    Point() {
+        x=0;
+        y=0;
+        z=0;
+    }
+
+    Point(double x, double y, double z) : x(x), y(y), z(z) {}
+
+    Point negatePoint() const {
+        return {-this->x, -this->y, -this->z};
+    }
+
+    double dotMultiplication(Point &temp) const {
+        double dot = this->x*temp.x + this->y*temp.y + this->z*temp.z;
+        return dot;
+    }
+
+    Point summation(Point &temp) const {
+        double ansX = this->x + temp.x;
+        double ansY = this->y + temp.y;
+        double ansZ = this->z + temp.z;
+        return {ansX, ansY, ansZ};
+    }
+
+    Point subtraction(Point &temp) const {
+        double ansX = this->x - temp.x;
+        double ansY = this->y - temp.y;
+        double ansZ = this->z - temp.z;
+        return {ansX, ansY, ansZ};
+    }
+
+    Point constantScale(double scalingConstant) const {
+        if (scalingConstant==0) return {0, 0,0};
+        double ansX = scalingConstant * this->x;
+        double ansY = scalingConstant * this->y;
+        double ansZ = scalingConstant * this->z;
+        return {ansX, ansY, ansZ};
+    }
+
+    Point crossMultiplication(Point &temp) const {
+        double ansX = this->y*temp.z - this->z*temp.y;
+        double ansY = this->z*temp.x - this->x*temp.z;
+        double ansZ = this->x*temp.y - this->y*temp.x;
+        return {ansX, ansY, ansZ};
+    }
+
+};
+class Color {
+public:
+    double red;
+    double green;
+    double blue;
+
+    Color() {
+        red = 0.0;
+        green = 0.0;
+        blue = 0.0;
+    }
+
+    Color(double red, double green, double blue) {
+        this->red = red;
+        this->green = green;
+        this->blue = blue;
+    }
+};
 class Object {
 public:
     Point reference_point;
-    vector<double> color;
+    Color color;
     vector<double> coefficients;
     int shine;
     Object () {}
@@ -38,7 +108,7 @@ public:
         reference_point = center;
         this -> radius = radius;
     }
-    void setColor(vector<double> color) {
+    void setColor(Color color) {
         this -> color = color;
     }
     void setCoefficient(vector<double> coefficients) {
@@ -52,7 +122,7 @@ public:
     {
         glPushMatrix();
         glTranslatef(reference_point.x, reference_point.y, reference_point.z);
-        glColor3f(color[0], color[1], color[2]);
+        glColor3f(color.red, color.green, color.blue);
         struct Point points[100][100];
         int i,j;
         double h,r;
@@ -100,7 +170,7 @@ class Triangle : public Object {
         b = b;
         c = c;
     }
-    void setColor(vector<double> color) {
+    void setColor(Color color) {
         color = color;
     }
     void setCoefficient(vector<double> coefficients) {
@@ -114,10 +184,20 @@ class Triangle : public Object {
 class Light {
 public:
     Point position;
-    vector<double> color;
-    Light(Point position, vector<double> color) {
+    Color color;
+    Light(Point position, Color color) {
         position =  position;
         color = color;
+    }
+
+    void draw(int slices, int stacks) {
+        glColor3f(this->color.red, this->color.green, this->color.blue);
+        glPushMatrix();
+        {
+            glTranslatef(this->position.x, this->position.y, this->position.z);
+            glutSolidSphere(0.5, slices, stacks);
+        }
+        glPopMatrix();
     }
 };
 
@@ -146,5 +226,16 @@ public:
             color = 1 - color;
         }
         glPopMatrix();
+    }
+};
+
+class Ray {
+public:
+    Point start;
+    Point direction;
+
+    Ray(Point start, Point direction) {
+        this->start = start;
+        this->direction = direction;
     }
 };

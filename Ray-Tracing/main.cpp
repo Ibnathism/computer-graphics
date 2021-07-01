@@ -132,6 +132,9 @@ void display(){
     for (int i = 0; i < allSpheres.size(); ++i) {
         allSpheres[i].draw(99, 99);
     }
+    for (int i = 0; i < lightCount; ++i) {
+        allLights[i].draw(7, 7);
+    }
     glutSwapBuffers();
 }
 void animate(){
@@ -148,18 +151,14 @@ void loadData() {
         in >> type;
         Point center;
         double radius;
-        double red, green, blue;
         double ambient, diffuse, specular, reflection;
         int shine;
-        vector<double> color;
+        Color color;
         vector<double> coefficients;
         if (type == "sphere") {
             in >> center.x >> center.y >> center.z;
             in >> radius;
-            in >> red >> green >> blue;
-            color.push_back(red);
-            color.push_back(green);
-            color.push_back(blue);
+            in >> color.red >> color.green >> color.blue;
             in >> ambient >> diffuse >> specular >> reflection;
             coefficients.push_back(ambient);
             coefficients.push_back(diffuse);
@@ -176,14 +175,10 @@ void loadData() {
     in >> lightCount;
     for (int i = 0; i < lightCount; ++i) {
         Point lightPosition;
-        double redLight, greenLight, blueLight;
-        vector<double> lightColors;
+        Color lightColor;
         in >> lightPosition.x >> lightPosition.y >> lightPosition.z;
-        in >> redLight >> greenLight >> blueLight;
-        lightColors.push_back(redLight);
-        lightColors.push_back(greenLight);
-        lightColors.push_back(blueLight);
-        Light light(lightPosition, lightColors);
+        in >> lightColor.red >> lightColor.green >> lightColor.blue;
+        Light light(lightPosition, lightColor);
         allLights.push_back(light);
     }
     in.close();

@@ -36,7 +36,9 @@ void clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void capture() {
 
+}
 
 void drawAxes() {
     glBegin(GL_LINES);{
