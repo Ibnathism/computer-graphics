@@ -100,6 +100,12 @@ public:
         return temp;
     }
 
+    void operator=(const Point &point) {
+        this->x = point.x;
+        this->y = point.y;
+        this->z = point.z;
+    }
+
     void print() const {
         std::cout << this->x <<" " << this->y << " " << this->z << std::endl;
     }
@@ -124,7 +130,16 @@ public:
         this->blue = blue;
     }
 
-    Color operator*(double scalingConstant) {
+    void clip() {
+        if (red < 0) red = 0;
+        if (red > 255) red = 255;
+        if (green < 0) green = 0;
+        if (green > 255) green = 255;
+        if (blue < 0) blue = 0;
+        if (blue > 255) blue = 255;
+    }
+
+    Color operator*(double scalingConstant) const {
         Color temp;
         temp.red = this->red * scalingConstant;
         temp.green = this->green * scalingConstant;
@@ -132,12 +147,18 @@ public:
         return temp;
     }
 
-    Color operator+(Color &color) {
+    Color operator+(Color &color) const {
         Color temp;
         temp.red = this->red + color.red;
         temp.green = this->green + color.green;
         temp.blue = this->blue + color.blue;
         return temp;
+    }
+
+    void operator=(const Color &color) {
+        this->red = red + color.red;
+        this->green = green + color.green;
+        this->blue = blue + color.blue;
     }
 
 
@@ -372,13 +393,13 @@ public:
         Point pointOfInt = r.start + dirScale;
 
         newRay.color = getColor(pointOfInt) * this->coefficients[0]; //multiplying ambient
-        //newRay.color.clip();
+        newRay.color.clip();
 
         if (newRay.t < 0 || level < 1) return newRay;
 
         Color changedColor = this->illuminate(level, pointOfInt, newRay.t, r);
         newRay.color = changedColor;
-        //newRay.color.clip();
+        newRay.color.clip();
 
         return newRay;
 

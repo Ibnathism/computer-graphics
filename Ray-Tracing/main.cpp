@@ -1,6 +1,7 @@
 #include <GL/glut.h>
 #include<bits/stdc++.h>
 #include "functions.h"
+#include "bitmap_image.h"
 #define WINDOW_HEIGHT 500
 #define WINDOW_WIDTH 500
 #define IMAGE_WIDTH 768
@@ -14,13 +15,23 @@ Point lookDir = upDir.crossMultiplication(rightDir);
 
 double pixels;
 int recursionLevel, objectCount, lightCount;
-void updateImage(vector<vector<Color>> &plane) {
 
+void updateImage(vector<vector<Color>> &plane) {
+    std::cout << "Now i will generate image" << std::endl;
+    bitmap_image bitmapImage(IMAGE_WIDTH, IMAGE_HEIGHT);
+    for (int i = 0; i < IMAGE_HEIGHT; ++i) {
+        for (int j = 0; j < IMAGE_WIDTH; ++j) {
+            bitmapImage.set_pixel(j, i, plane[i][j].red, plane[i][j].green, plane[i][j].blue);
+        }
+    }
+    bitmapImage.save_image("1605106.bmp");
 }
 Color calculateColor(Ray &ray) {
+    //std::cout << "Now i will calculate color" << std::endl;
     Color color;
     int minIndex = -99999;
     double minT = 99999;
+
     for (int i = 0; i < allObjects.size(); ++i) {
         Ray temp = allObjects[i]->intersect(ray, 0);
         if (temp.t < minT && temp.t > 0) {
@@ -45,9 +56,9 @@ void capture() {
     double dv = (double) WINDOW_HEIGHT/IMAGE_HEIGHT;
 
     ///DO we need this???
-    Point mid_r = rightDir * (0.5 * du);
-    Point mid_u = upDir * (0.5 * dv);
-    topLeft = topLeft + mid_r - mid_u;
+//    Point mid_r = rightDir * (0.5 * du);
+//    Point mid_u = upDir * (0.5 * dv);
+//    topLeft = topLeft + mid_r - mid_u;
 
     Point currentPixel, rayDirection, rayStart;
     vector<vector<Color>> nearPlaneColors;
@@ -63,7 +74,8 @@ void capture() {
             rayDirection.normalizePoint();
 
             Ray eyeToDir(rayStart, rayDirection);
-
+            Color c = calculateColor(eyeToDir);
+            //std::cout << c.red << ", " << c.green << ", " << c.blue << std::endl;
             nearPlaneColors[i].push_back(calculateColor(eyeToDir));
         }
     }
@@ -110,6 +122,7 @@ void keyboardListener(unsigned char key, int x,int y){
         case '0':
             capture();
             std::cout << "Image Captured" << std::endl;
+            break;
         default:
             break;
     }
@@ -118,27 +131,27 @@ void specialKeyListener(int key, int x,int y){
     switch(key){
         case GLUT_KEY_DOWN:
             position = position - lookDir;
-            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_UP:
             position = position + lookDir;
-            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_RIGHT:
             position = position + rightDir;
-            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_LEFT:
             position = position - rightDir;
-            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_PAGE_UP:
             position = position + upDir;
-            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_PAGE_DOWN:
             position = position - upDir;
-            std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         default:
             break;
