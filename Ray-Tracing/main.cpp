@@ -29,15 +29,16 @@ void updateImage(vector<vector<Color>> &plane) {
 Color calculateColor(Ray &ray) {
     //std::cout << "Now i will calculate color" << std::endl;
     Color color;
-    int minIndex = -99999;
-    double minT = 99999;
-
-    for (int i = 0; i < allObjects.size(); ++i) {
-        Ray temp = allObjects[i]->intersect(ray, 0);
+    int minIndex = NEG_INF;
+    double minT = INF;
+    int count = 0;
+    for (auto object: allObjects) {
+        Ray temp = object->intersect(ray, 0);
         if (temp.t < minT && temp.t > 0) {
             minT = temp.t;
-            minIndex = i;
+            minIndex = count;
         }
+        count++;
     }
     if (minIndex > 0) {
         Ray final = allObjects[minIndex]->intersect(ray, recursionLevel);
@@ -74,9 +75,8 @@ void capture() {
             rayDirection.normalizePoint();
 
             Ray eyeToDir(rayStart, rayDirection);
-            //Color c = calculateColor(eyeToDir);
-            //std::cout << c.red << ", " << c.green << ", " << c.blue << std::endl;
             nearPlaneColors[i].push_back(calculateColor(eyeToDir));
+
         }
     }
 

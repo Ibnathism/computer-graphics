@@ -9,6 +9,8 @@
 #include <bits/stdc++.h>
 #include <utility>
 #include <vector>
+#define INF INT_MAX
+#define NEG_INF (-100)
 #define pi (2*acos(0.0))
 #define FAR 1000
 #define FLOOR_WIDTH 1000
@@ -317,11 +319,10 @@ public:
         temp = point - reference_point;
         return temp.normalizePoint();
     }
-    Color illuminate(int level, Point pointOfInt, double t, Ray ray) {
+    Color illuminate(int level, Point pointOfInt, Ray ray) {
         Color newColor = getColor(pointOfInt) * this->coefficients[0];
         Point normal = findNormal(pointOfInt);
         double dotNormal = normal.dotMultiplication(ray.direction);
-        int initLevel = 0;
 
         if(dotNormal > 0) normal.negatePoint();
 
@@ -335,8 +336,9 @@ public:
 
             int isIntercept = 0;
 
-            for (int j = 0; j < allObjects.size(); ++j) {
-                Ray rayIntercept = allObjects[i]->intersect(lightRay, initLevel);
+            for (auto obj : allObjects) {
+
+                Ray rayIntercept = obj->intersect(lightRay, 0);
                 if (rayIntercept.t < dist && rayIntercept.t > 0) {
                     isIntercept = 1;
                     break;
@@ -366,18 +368,20 @@ public:
             Point rayReflectedStart = pointOfInt + rayReflectedDir;
             Ray rayReflected(rayReflectedStart, rayReflectedDir);
 
-            int indexOfMin = -9999;
-            double minT = 999999.0;
+            int indexOfMin = NEG_INF;
+            double minT = INF;
+            int count = 0;
+            for (auto object : allObjects) {
 
-            for (int j = 0; j < allObjects.size(); ++j) {
-                Ray temp = allObjects[j]->intersect(rayReflected, initLevel);
+                Ray temp = object->intersect(rayReflected, 0);
                 if (temp.t < minT && temp.t > 0) {
                     minT = temp.t;
-                    indexOfMin = j;
+                    indexOfMin = count;
                 }
+                count++;
             }
 
-            if (indexOfMin > 0)  {
+            if (indexOfMin != NEG_INF)  {
                 Ray next = allObjects[indexOfMin]->intersect(rayReflected, level-1);
                 Color tempNext = next.color * coefficients[3];
                 newColor = newColor + tempNext;
@@ -397,7 +401,7 @@ public:
 
         if (newRay.t < 0 || level < 1) return newRay;
 
-        Color changedColor = this->illuminate(level, pointOfInt, newRay.t, r);
+        Color changedColor = this->illuminate(level, pointOfInt, r);
         newRay.color = changedColor;
         newRay.color.clip();
 
