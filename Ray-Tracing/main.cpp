@@ -74,7 +74,7 @@ void capture() {
             rayDirection.normalizePoint();
 
             Ray eyeToDir(rayStart, rayDirection);
-            Color c = calculateColor(eyeToDir);
+            //Color c = calculateColor(eyeToDir);
             //std::cout << c.red << ", " << c.green << ", " << c.blue << std::endl;
             nearPlaneColors[i].push_back(calculateColor(eyeToDir));
         }
