@@ -125,9 +125,19 @@ public:
     }
 
     Color operator*(double scalingConstant) {
-        this->red = this->red * scalingConstant;
-        this->green = this->green * scalingConstant;
-        this->blue = this->blue * scalingConstant;
+        Color temp;
+        temp.red = this->red * scalingConstant;
+        temp.green = this->green * scalingConstant;
+        temp.blue = this->blue * scalingConstant;
+        return temp;
+    }
+
+    Color operator+(Color &color) {
+        Color temp;
+        temp.red = this->red + color.red;
+        temp.green = this->green + color.green;
+        temp.blue = this->blue + color.blue;
+        return temp;
     }
 
 
@@ -192,8 +202,8 @@ public:
         this->coefficients = coeffs;
     }
 
-    virtual double intersect(Ray *r, double *color, int level){
-        return -1.0;
+    virtual Ray intersect(Ray r, int level){
+        return Ray();
     }
 
     virtual Color getColor(Point point) {
@@ -204,7 +214,7 @@ public:
         return Point(0, 0, 0);
     }
 };
-
+vector<Object *> allObjects;
 class Sphere : public Object {
 public:
     double radius;
@@ -290,6 +300,7 @@ public:
         Color newColor = getColor(pointOfInt) * this->coefficients[0];
         Point normal = findNormal(pointOfInt);
         double dotNormal = normal.dotMultiplication(ray.direction);
+        int initLevel = 0;
 
         if(dotNormal > 0) normal.negatePoint();
 
@@ -301,14 +312,60 @@ public:
             Point lightStart = pointOfInt + lightDir;
             Ray lightRay(lightStart, lightDir);
 
-            bool isIntercept = false;
+            int isIntercept = 0;
 
+            for (int j = 0; j < allObjects.size(); ++j) {
+                Ray rayIntercept = allObjects[i]->intersect(lightRay, initLevel);
+                if (rayIntercept.t < dist && rayIntercept.t > 0) {
+                    isIntercept = 1;
+                    break;
+                }
+            }
 
+            if (isIntercept == 0) {
+                double lf = 1.0;
+                double lightDotNormal = lightRay.direction.dotMultiplication(normal);
+                double lambert = max(0.0, lightDotNormal);
+                Point reflectedRayScaled =  normal * (2.0 * lightDotNormal);
+                Point reflectedRay = reflectedRayScaled - lightRay.direction;
+                double rayDotReflect = ray.direction.dotMultiplication(reflectedRay);
+                double phongValue = max(0.0, rayDotReflect);
+                Color addedColor = getColor(pointOfInt) * lf * lambert * coefficients[1];
+                newColor = newColor + addedColor;
+                addedColor = Color(255, 255, 255) * lf * pow(phongValue, shine) * coefficients[2];
+                newColor = newColor + addedColor;
+            }
+
+        }
+        if (level > 0) {
+            double rayDotNormal = ray.direction.dotMultiplication(normal);
+            Point scaledRayDotNormal = normal * (rayDotNormal * 2.0);
+            Point rayReflectedDir = ray.direction - scaledRayDotNormal;
+            rayReflectedDir.normalizePoint();
+            Point rayReflectedStart = pointOfInt + rayReflectedDir;
+            Ray rayReflected(rayReflectedStart, rayReflectedDir);
+
+            int indexOfMin = -9999;
+            double minT = 999999.0;
+
+            for (int j = 0; j < allObjects.size(); ++j) {
+                Ray temp = allObjects[j]->intersect(rayReflected, initLevel);
+                if (temp.t < minT && temp.t > 0) {
+                    minT = temp.t;
+                    indexOfMin = j;
+                }
+            }
+
+            if (indexOfMin > 0)  {
+                Ray next = allObjects[indexOfMin]->intersect(rayReflected, level-1);
+                Color tempNext = next.color * coefficients[3];
+                newColor = newColor + tempNext;
+            }
         }
         return newColor;
     }
 
-    Ray intersect(Ray r, int level) {
+    Ray intersect(Ray r, int level) override {
         Ray newRay;
         newRay.t = getT(r);
         Point dirScale = r.direction * r.t;
@@ -328,7 +385,7 @@ public:
     }
 };
 
-vector<Object *> allObjects;
+
 
 class Triangle : public Object {
     Point a, b, c;

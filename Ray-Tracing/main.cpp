@@ -14,6 +14,64 @@ Point lookDir = upDir.crossMultiplication(rightDir);
 
 double pixels;
 int recursionLevel, objectCount, lightCount;
+void updateImage(vector<vector<Color>> &plane) {
+
+}
+Color calculateColor(Ray &ray) {
+    Color color;
+    int minIndex = -99999;
+    double minT = 99999;
+    for (int i = 0; i < allObjects.size(); ++i) {
+        Ray temp = allObjects[i]->intersect(ray, 0);
+        if (temp.t < minT && temp.t > 0) {
+            minT = temp.t;
+            minIndex = i;
+        }
+    }
+    if (minIndex > 0) {
+        Ray final = allObjects[minIndex]->intersect(ray, recursionLevel);
+        color = final.color;
+    }
+    return color;
+}
+void capture() {
+    double planeDistance = (WINDOW_HEIGHT/2.0)/tan((pi/180.0)*(VIEW_ANGLE/2.0));
+    Point topLeft_l = lookDir * planeDistance;
+    Point topLeft_r = rightDir * (WINDOW_WIDTH/2.0);
+    Point topLeft_u = upDir * (WINDOW_HEIGHT/2.0);
+    Point topLeft = position + topLeft_l - topLeft_r + topLeft_u;
+
+    double du = (double) WINDOW_WIDTH/IMAGE_WIDTH;
+    double dv = (double) WINDOW_HEIGHT/IMAGE_HEIGHT;
+
+    ///DO we need this???
+    Point mid_r = rightDir * (0.5 * du);
+    Point mid_u = upDir * (0.5 * dv);
+    topLeft = topLeft + mid_r - mid_u;
+
+    Point currentPixel, rayDirection, rayStart;
+    vector<vector<Color>> nearPlaneColors;
+    for (int i = 0; i < IMAGE_HEIGHT; ++i) {
+        nearPlaneColors.emplace_back();
+        for (int j = 0; j < IMAGE_WIDTH; ++j) {
+            Point cp_r =  rightDir * (j * du);
+            Point cp_u = upDir * (i * dv);
+            currentPixel = topLeft + cp_r - cp_u;
+
+            rayStart = position;
+            rayDirection = currentPixel - position;
+            rayDirection.normalizePoint();
+
+            Ray eyeToDir(rayStart, rayDirection);
+
+            nearPlaneColors[i].push_back(calculateColor(eyeToDir));
+        }
+    }
+
+    updateImage(nearPlaneColors);
+
+
+}
 void keyboardListener(unsigned char key, int x,int y){
     double positiveAngle = 3.0;
     double negativeAngle = -3.0;
@@ -49,6 +107,9 @@ void keyboardListener(unsigned char key, int x,int y){
             upDir = rightDir.crossMultiplication(lookDir);
             //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
+        case '0':
+            capture();
+            std::cout << "Image Captured" << std::endl;
         default:
             break;
     }
@@ -97,58 +158,6 @@ void mouseListener(int button, int state, int x, int y){
         default:
             break;
     }
-}
-
-void updateImage(vector<vector<Color>> &plane) {
-
-}
-
-Color calculateColor(Ray &ray) {
-    Color color;
-
-    for (int i = 0; i < allObjects.size(); ++i) {
-
-    }
-    return color;
-}
-
-void capture() {
-    double planeDistance = (WINDOW_HEIGHT/2.0)/tan((pi/180.0)*(VIEW_ANGLE/2.0));
-    Point topLeft_l = lookDir * planeDistance;
-    Point topLeft_r = rightDir * (WINDOW_WIDTH/2.0);
-    Point topLeft_u = upDir * (WINDOW_HEIGHT/2.0);
-    Point topLeft = position + topLeft_l - topLeft_r + topLeft_u;
-
-    double du = (double) WINDOW_WIDTH/IMAGE_WIDTH;
-    double dv = (double) WINDOW_HEIGHT/IMAGE_HEIGHT;
-
-    ///DO we need this???
-    Point mid_r = rightDir * (0.5 * du);
-    Point mid_u = upDir * (0.5 * dv);
-    topLeft = topLeft + mid_r - mid_u;
-
-    Point currentPixel, rayDirection, rayStart;
-    vector<vector<Color>> nearPlaneColors;
-    for (int i = 0; i < IMAGE_HEIGHT; ++i) {
-        nearPlaneColors.emplace_back();
-        for (int j = 0; j < IMAGE_WIDTH; ++j) {
-            Point cp_r =  rightDir * (j * du);
-            Point cp_u = upDir * (i * dv);
-            currentPixel = topLeft + cp_r - cp_u;
-
-            rayStart = position;
-            rayDirection = currentPixel - position;
-            rayDirection.normalizePoint();
-
-            Ray eyeToDir(rayStart, rayDirection);
-
-            nearPlaneColors[i].push_back(calculateColor(eyeToDir));
-        }
-    }
-
-    updateImage(nearPlaneColors);
-
-
 }
 
 void display(){
