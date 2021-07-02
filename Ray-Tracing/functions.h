@@ -123,7 +123,7 @@ Point rotateOneAlongAnother(Point &toBeRotated, Point &respective, double angleO
     double angleInRadian = angleOfRotation*pi / 180.0;
     Point component1 = toBeRotated.constantScale(cos(angleInRadian));
     Point component2 = temp.constantScale(sin(angleInRadian));
-    Point answer = component1.summation(component2);
+    Point answer = component1 + component2;
     return answer;
 }
 

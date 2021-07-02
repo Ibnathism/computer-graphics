@@ -6,6 +6,8 @@
 #define RAY_TRACING_CLASSES_H
 
 #endif //RAY_TRACING_CLASSES_H
+#include <bits/stdc++.h>
+#include <utility>
 #include <vector>
 #define pi (2*acos(0.0))
 #define FAR 1000
@@ -117,6 +119,24 @@ public:
         this->blue = blue;
     }
 };
+
+class Ray {
+public:
+    Color color;
+    Point start;
+    Point direction;
+    double t;
+
+    Ray() {
+        this->t = -1;
+    }
+    Ray(Point start, Point direction) {
+        this->t = -1;
+        this->start = start;
+        this->direction = direction;
+    }
+};
+
 class Object {
 public:
     Point reference_point;
@@ -129,6 +149,10 @@ public:
     void setColor() {}
     void setShine() {}
     void setCoefficient() {}
+
+    virtual double intersect(Ray *r, double *color, int level){
+        return -1.0;
+    }
 };
 
 class Sphere : public Object {
@@ -193,6 +217,31 @@ public:
         glPopMatrix();
     }
 
+    double getT(Ray r) {
+        double t;
+        Point startMinusCenter = r.start - this->reference_point;
+        double a = r.direction.dotMultiplication(r.direction);
+        double b = 2.0 * r.direction.dotMultiplication(startMinusCenter);
+        double c = startMinusCenter.dotMultiplication(startMinusCenter) - this->radius * this->radius;
+        double discriminant = b * b - 4.0 * a * c; //b^2 - 4ac
+
+        if (discriminant >= 0) {
+            double rootDiscriminant = sqrt(discriminant);
+            double tPlus = (-b + rootDiscriminant) / (2.0 * a);
+            double tMinus = (-b - rootDiscriminant) / (2.0 * a);
+            if (tPlus >= 0 && tMinus >= 0) t = min(tPlus, tMinus);
+            else t = max(tPlus, tMinus);
+        } else t = - 1.0;
+        return t;
+    }
+
+    Ray intersect(Ray r, int level) {
+        Ray newRay;
+        newRay.t = getT(r);
+        Point dirScale = r.direction * r.t;
+        Point pointOfInt = r.start + dirScale;
+
+    }
 };
 
 class Triangle : public Object {
@@ -262,13 +311,3 @@ public:
     }
 };
 
-class Ray {
-public:
-    Point start;
-    Point direction;
-
-    Ray(Point start, Point direction) {
-        this->start = start;
-        this->direction = direction;
-    }
-};

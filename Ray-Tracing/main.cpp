@@ -108,6 +108,9 @@ void updateImage(vector<vector<Color>> &plane) {
 Color calculateColor(Ray &ray) {
     Color color;
 
+    for (int i = 0; i < allSpheres.size(); ++i) {
+
+    }
     return color;
 }
 
@@ -149,6 +152,7 @@ void capture() {
 
 
 }
+
 void display(){
     clear();
     glMatrixMode(GL_MODELVIEW);
@@ -166,9 +170,11 @@ void display(){
     }
     glutSwapBuffers();
 }
+
 void animate(){
     glutPostRedisplay();
 }
+
 void loadData() {
     fstream in;
     in.open("scene.txt");
@@ -212,6 +218,7 @@ void loadData() {
     }
     in.close();
 }
+
 void init(){
     clear();
     loadData();
