@@ -143,9 +143,9 @@ public:
 
     Color operator*(double scalingConstant) const {
         Color temp;
-        temp.red = this->red * scalingConstant;
-        temp.green = this->green * scalingConstant;
-        temp.blue = this->blue * scalingConstant;
+        temp.red = (double) this->red * scalingConstant;
+        temp.green = (double) this->green * scalingConstant;
+        temp.blue = (double) this->blue * scalingConstant;
         return temp;
     }
 
@@ -158,9 +158,9 @@ public:
     }
 
     void operator=(const Color &color) {
-        this->red = red + color.red;
-        this->green = green + color.green;
-        this->blue = blue + color.blue;
+        this->red = color.red;
+        this->green = color.green;
+        this->blue = color.blue;
     }
 
 
@@ -223,7 +223,7 @@ public:
         this->coefficients = std::move(coeffs);
     }
 
-    virtual Ray intersect(Ray r, int level){
+    virtual Ray intersect(Ray &r, int level){
         return {};
     }
 
@@ -232,15 +232,14 @@ public:
     }
 
     virtual Point findNormal(Point point) {
-        return Point(0, 0, 0);
+        return Point(0, 0, 1);
     }
 };
 vector<Object *> allObjects;
 class Sphere : public Object {
 public:
-    double radius;
-    Sphere() {
-    }
+    double radius{};
+    Sphere() = default;
 
     Sphere(Point center, double radius) {
         reference_point = center;
@@ -302,9 +301,9 @@ public:
             double rootDiscriminant = sqrt(discriminant);
             double tPlus = (-b + rootDiscriminant) / (2.0 * a);
             double tMinus = (-b - rootDiscriminant) / (2.0 * a);
-            if (tPlus < 0 && tMinus < 0) return -1;
-            else if (tMinus > 0) return tMinus;
-            else if (tPlus > 0) return tPlus;
+            if (tPlus < 0 && tMinus < 0) t = -1;
+            else if (tMinus >= 0 && tPlus >= 0) t = tMinus;
+            else if (tMinus < 0) t = tPlus;
             else return -1;
         } else t = - 1.0;
         return t;
@@ -321,45 +320,56 @@ public:
     }
     Color illuminate(int level, Point pointOfInt, Ray ray) {
         Color newColor = getColor(pointOfInt) * this->coefficients[0];
+
         Point normal = findNormal(pointOfInt);
         double dotNormal = normal.dotMultiplication(ray.direction);
 
-        if(dotNormal > 0) normal.negatePoint();
+        if(dotNormal > 0) normal = normal * (-1.0);
 
-        for (int i = 0; i < allLights.size(); ++i) {
-            Point lightDir = allLights[i].position - pointOfInt;
+        for (auto light: allLights) {
+            Point lightDir = light.position - pointOfInt;
             double dist = lightDir.absolute();
             lightDir.normalizePoint();
 
             Point lightStart = pointOfInt + lightDir;
             Ray lightRay(lightStart, lightDir);
 
-            int isIntercept = 0;
+            bool isIntercept = false;
 
             for (auto obj : allObjects) {
 
                 Ray rayIntercept = obj->intersect(lightRay, 0);
                 if (rayIntercept.t < dist && rayIntercept.t > 0) {
-                    isIntercept = 1;
+                    isIntercept = true;
                     break;
                 }
             }
 
-            if (isIntercept == 0) {
-                double lf = 1.0;
-                double lightDotNormal = lightRay.direction.dotMultiplication(normal);
+
+            if (!isIntercept) {
+                double lf = 1;
+                double lightDotNormal = lightDir.dotMultiplication(normal);
                 double lambert = max(0.0, lightDotNormal);
                 Point reflectedRayScaled =  normal * (2.0 * lightDotNormal);
-                Point reflectedRay = reflectedRayScaled - lightRay.direction;
+                Point reflectedRay = reflectedRayScaled - lightDir;
+
                 double rayDotReflect = ray.direction.dotMultiplication(reflectedRay);
-                double phongValue = max(0.0, rayDotReflect);
+
+                double phongValue = max(rayDotReflect, 0.0);
+
                 Color addedColor = getColor(pointOfInt) * lf * lambert * coefficients[1];
+
+                //std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue << std::endl;
                 newColor = newColor + addedColor;
+
                 addedColor = Color(255, 255, 255) * lf * pow(phongValue, shine) * coefficients[2];
+
                 newColor = newColor + addedColor;
+
             }
 
         }
+
         if (level > 0) {
             double rayDotNormal = ray.direction.dotMultiplication(normal);
             Point scaledRayDotNormal = normal * (rayDotNormal * 2.0);
@@ -377,32 +387,41 @@ public:
                 if (temp.t < minT && temp.t > 0) {
                     minT = temp.t;
                     indexOfMin = count;
+
                 }
                 count++;
             }
 
             if (indexOfMin != NEG_INF)  {
                 Ray next = allObjects[indexOfMin]->intersect(rayReflected, level-1);
-                Color tempNext = next.color * coefficients[3];
+                Color tempNext = next.color * coefficients[3] * 1.0;
                 newColor = newColor + tempNext;
+
+
             }
         }
+
+
         return newColor;
     }
 
-    Ray intersect(Ray r, int level) override {
+    Ray intersect(Ray &r, int level) override {
+
         Ray newRay;
         newRay.t = getT(r);
         Point dirScale = r.direction * r.t;
         Point pointOfInt = r.start + dirScale;
-
+        //cout << "MY COLOR " << this->color.red << ", " << this->color.green << ", " << this->color.blue << endl;
         newRay.color = getColor(pointOfInt) * this->coefficients[0]; //multiplying ambient
+
         newRay.color.clip();
 
         if (newRay.t < 0 || level < 1) return newRay;
 
         Color changedColor = this->illuminate(level, pointOfInt, r);
+        //cout << "Changed " << changedColor.red << ", " << changedColor.green << ", " << changedColor.blue << endl;
         newRay.color = changedColor;
+
         newRay.color.clip();
 
         return newRay;

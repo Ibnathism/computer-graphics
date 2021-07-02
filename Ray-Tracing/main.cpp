@@ -42,6 +42,7 @@ Color calculateColor(Ray &ray) {
     }
     if (minIndex != NEG_INF) {
         Ray final = allObjects[minIndex]->intersect(ray, recursionLevel);
+
         color = final.color;
     }
     return color;
@@ -181,7 +182,7 @@ void display(){
     glMatrixMode(GL_MODELVIEW);
     //glColor3f(1, 1, 1);
     //drawAxes();
-    baseFloor.draw();
+    //baseFloor.draw();
     for (int i = 0; i < allObjects.size(); ++i) {
         allObjects[i]->draw();
     }
