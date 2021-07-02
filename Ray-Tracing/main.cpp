@@ -51,29 +51,6 @@ void keyboardListener(unsigned char key, int x,int y){
             upDir = rightDir.crossMultiplication(lookDir);
             //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
-        case 'q':
-            applyQRotation();
-            break;
-        case 'w':
-            applyWRotation();
-            break;
-        case 'e':
-            applyERotation();
-            break;
-        case 'r':
-            applyRRotation();
-            break;
-        case 'a':
-            applyARotation();
-            break;
-        case 's':
-            applySRotation();
-        case 'd':
-            applyDRotation();
-            break;
-        case 'f':
-            applyFRotation();
-            break;
         default:
             break;
     }
@@ -81,27 +58,27 @@ void keyboardListener(unsigned char key, int x,int y){
 void specialKeyListener(int key, int x,int y){
     switch(key){
         case GLUT_KEY_DOWN:
-            position = position.subtraction(lookDir);
+            position = position - lookDir;
             std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_UP:
-            position = position.summation(lookDir);
+            position = position + lookDir;
             std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_RIGHT:
-            position = position.summation(rightDir);
+            position = position + rightDir;
             std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_LEFT:
-            position = position.subtraction(rightDir);
+            position = position - rightDir;
             std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_PAGE_UP:
-            position = position.summation(upDir);
+            position = position + upDir;
             std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case GLUT_KEY_PAGE_DOWN:
-            position = position.subtraction(upDir);
+            position = position - upDir;
             std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         default:
@@ -123,6 +100,17 @@ void mouseListener(int button, int state, int x, int y){
             break;
     }
 }
+
+void updateImage(vector<vector<Color>> &plane) {
+
+}
+
+Color calculateColor(Ray &ray) {
+    Color color;
+
+    return color;
+}
+
 void capture() {
     double planeDistance = (WINDOW_HEIGHT/2.0)/tan((pi/180.0)*(VIEW_ANGLE/2.0));
     Point topLeft_l = lookDir * planeDistance;
@@ -130,20 +118,34 @@ void capture() {
     Point topLeft_u = upDir * (WINDOW_HEIGHT/2.0);
     Point topLeft = position + topLeft_l - topLeft_r + topLeft_u;
 
-    double du = WINDOW_WIDTH/IMAGE_HEIGHT;
-    double dv = WINDOW_HEIGHT/IMAGE_HEIGHT;
+    double du = (double) WINDOW_WIDTH/IMAGE_WIDTH;
+    double dv = (double) WINDOW_HEIGHT/IMAGE_HEIGHT;
 
     ///DO we need this???
     Point mid_r = rightDir * (0.5 * du);
     Point mid_u = upDir * (0.5 * dv);
     topLeft = topLeft + mid_r - mid_u;
 
-    for (int i = 0; i < IMAGE_WIDTH; ++i) {
-        for (int j = 0; j < IMAGE_HEIGHT; ++j) {
+    Point currentPixel, rayDirection, rayStart;
+    vector<vector<Color>> nearPlaneColors;
+    for (int i = 0; i < IMAGE_HEIGHT; ++i) {
+        nearPlaneColors.emplace_back();
+        for (int j = 0; j < IMAGE_WIDTH; ++j) {
+            Point cp_r =  rightDir * (j * du);
+            Point cp_u = upDir * (i * dv);
+            currentPixel = topLeft + cp_r - cp_u;
 
+            rayStart = position;
+            rayDirection = currentPixel - position;
+            rayDirection.normalizePoint();
+
+            Ray eyeToDir(rayStart, rayDirection);
+
+            nearPlaneColors[i].push_back(calculateColor(eyeToDir));
         }
     }
 
+    updateImage(nearPlaneColors);
 
 
 }

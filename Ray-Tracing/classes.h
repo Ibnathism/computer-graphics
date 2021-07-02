@@ -74,20 +74,6 @@ public:
         return dot;
     }
 
-    Point summation(Point &temp) const {
-        double ansX = this->x + temp.x;
-        double ansY = this->y + temp.y;
-        double ansZ = this->z + temp.z;
-        return {ansX, ansY, ansZ};
-    }
-
-    Point subtraction(Point &temp) const {
-        double ansX = this->x - temp.x;
-        double ansY = this->y - temp.y;
-        double ansZ = this->z - temp.z;
-        return {ansX, ansY, ansZ};
-    }
-
     Point constantScale(double scalingConstant) const {
         if (scalingConstant==0) return {0, 0,0};
         double ansX = scalingConstant * this->x;
