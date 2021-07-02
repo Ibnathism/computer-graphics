@@ -3,6 +3,6 @@ project(Ray_Tracing)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(Ray-Tracing point.h functions.h main.cpp)
+add_executable(Ray-Tracing functions.h main.cpp)
 set(OpenGlLinkers -lglut -lGLU -lGL)
 target_link_libraries(Ray-Tracing ${OpenGlLinkers})

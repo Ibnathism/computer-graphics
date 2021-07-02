@@ -16,8 +16,7 @@
 
 using namespace std;
 
-class Point
-{
+class Point {
 public:
     double x,y,z;
 
@@ -96,11 +95,17 @@ public:
         return *this/temp;
     }
 
+    double absolute() {
+        double temp = sqrt(x*x + y*y + z*z);
+        return temp;
+    }
+
     void print() const {
         std::cout << this->x <<" " << this->y << " " << this->z << std::endl;
     }
 
 };
+
 class Color {
 public:
     double red;
@@ -118,7 +123,36 @@ public:
         this->green = green;
         this->blue = blue;
     }
+
+    Color operator*(double scalingConstant) {
+        this->red = this->red * scalingConstant;
+        this->green = this->green * scalingConstant;
+        this->blue = this->blue * scalingConstant;
+    }
+
+
 };
+
+class Light {
+public:
+    Point position;
+    Color color;
+    Light(Point position, Color color) {
+        position =  position;
+        color = color;
+    }
+
+    void draw(int slices, int stacks) {
+        glColor3f(this->color.red, this->color.green, this->color.blue);
+        glPushMatrix();
+        {
+            glTranslatef(this->position.x, this->position.y, this->position.z);
+            glutSolidSphere(0.5, slices, stacks);
+        }
+        glPopMatrix();
+    }
+};
+vector<Light> allLights;
 
 class Ray {
 public:
@@ -141,7 +175,7 @@ class Object {
 public:
     Point reference_point;
     Color color;
-    vector<double> coefficients;
+    vector<double> coefficients; //ambient, diffuse, specular, reflection
     int shine;
     Object () {}
 
@@ -152,6 +186,14 @@ public:
 
     virtual double intersect(Ray *r, double *color, int level){
         return -1.0;
+    }
+
+    virtual Color getColor(Point point) {
+        return color;
+    }
+
+    virtual Point findNormal(Point point) {
+        return Point(0, 0, 0);
     }
 };
 
@@ -235,14 +277,58 @@ public:
         return t;
     }
 
+    Color getColor(Point point) override {
+        return color;
+    }
+
+    Point findNormal(Point point) override {
+        Point temp;
+        temp = point - reference_point;
+        return temp.normalizePoint();
+    }
+    Color illuminate(int level, Point pointOfInt, double t, Ray ray) {
+        Color newColor = getColor(pointOfInt) * this->coefficients[0];
+        Point normal = findNormal(pointOfInt);
+        double dotNormal = normal.dotMultiplication(ray.direction);
+
+        if(dotNormal > 0) normal.negatePoint();
+
+        for (int i = 0; i < allLights.size(); ++i) {
+            Point lightDir = allLights[i].position - pointOfInt;
+            double dist = lightDir.absolute();
+            lightDir.normalizePoint();
+
+            Point lightStart = pointOfInt + lightDir;
+            Ray lightRay(lightStart, lightDir);
+
+            bool isIntercept = false;
+
+
+        }
+        return newColor;
+    }
+
     Ray intersect(Ray r, int level) {
         Ray newRay;
         newRay.t = getT(r);
         Point dirScale = r.direction * r.t;
         Point pointOfInt = r.start + dirScale;
 
+        newRay.color = getColor(pointOfInt) * this->coefficients[0]; //multiplying ambient
+        //newRay.color.clip();
+
+        if (newRay.t < 0 || level < 1) return newRay;
+
+        Color changedColor = this->illuminate(level, pointOfInt, newRay.t, r);
+        newRay.color = changedColor;
+        //newRay.color.clip();
+
+        return newRay;
+
     }
 };
+
+vector<Sphere> allSpheres;
 
 class Triangle : public Object {
     Point a, b, c;
@@ -263,25 +349,6 @@ class Triangle : public Object {
     }
 };
 
-class Light {
-public:
-    Point position;
-    Color color;
-    Light(Point position, Color color) {
-        position =  position;
-        color = color;
-    }
-
-    void draw(int slices, int stacks) {
-        glColor3f(this->color.red, this->color.green, this->color.blue);
-        glPushMatrix();
-        {
-            glTranslatef(this->position.x, this->position.y, this->position.z);
-            glutSolidSphere(0.5, slices, stacks);
-        }
-        glPopMatrix();
-    }
-};
 
 class Floor : public Object {
 public:
@@ -310,4 +377,6 @@ public:
         glPopMatrix();
     }
 };
+
+Floor baseFloor;
 

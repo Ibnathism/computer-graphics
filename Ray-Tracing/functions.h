@@ -67,25 +67,6 @@ void drawSolidRectangle(Point topLeft, Point bottomLeft, Point topRight, Point b
     }glEnd();
 }
 
-void draw2DCircle(double centerX, double centerY, double radius,int segments) {
-    int i;
-    Point points[100];
-    for(i=0;i<=segments;i++)
-    {
-        points[i].x=radius*cos(((double)i/(double)segments)*2*pi);
-        points[i].x = points[i].x + centerX;
-        points[i].y=radius*sin(((double)i/(double)segments)*2*pi);
-        points[i].y = points[i].y + centerY;
-    }
-    for(i=0;i<segments;i++)
-    {
-        glBegin(GL_LINES);{
-            glVertex3f(points[i].x,points[i].y,0);
-            glVertex3f(points[i+1].x,points[i+1].y,0);
-        }glEnd();
-    }
-}
-
 
 
 double getRandom(double a, double b) {

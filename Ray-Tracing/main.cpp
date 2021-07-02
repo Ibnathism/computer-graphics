@@ -11,9 +11,7 @@ Point rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
 Point upDir = Point(0,0,1);
 Point lookDir = upDir.crossMultiplication(rightDir);
 
-Floor baseFloor;
-vector<Sphere> allSpheres;
-vector<Light> allLights;
+
 double pixels;
 int recursionLevel, objectCount, lightCount;
 void keyboardListener(unsigned char key, int x,int y){
