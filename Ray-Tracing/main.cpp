@@ -106,7 +106,7 @@ void updateImage(vector<vector<Color>> &plane) {
 Color calculateColor(Ray &ray) {
     Color color;
 
-    for (int i = 0; i < allSpheres.size(); ++i) {
+    for (int i = 0; i < allObjects.size(); ++i) {
 
     }
     return color;
@@ -160,8 +160,8 @@ void display(){
     //glColor3f(1, 1, 1);
     //drawAxes();
     baseFloor.draw();
-    for (int i = 0; i < allSpheres.size(); ++i) {
-        allSpheres[i].draw(80, 80);
+    for (int i = 0; i < allObjects.size(); ++i) {
+        allObjects[i]->draw();
     }
     for (int i = 0; i < lightCount; ++i) {
         allLights[i].draw(7, 7);
@@ -180,6 +180,7 @@ void loadData() {
     in >> pixels;
     in >> objectCount;
     string type;
+    Object *object;
     for (int i = 0; i < objectCount; ++i) {
         in >> type;
         Point center;
@@ -198,11 +199,11 @@ void loadData() {
             coefficients.push_back(specular);
             coefficients.push_back(reflection);
             in >> shine;
-            Sphere sphere(center, radius);
-            sphere.setColor(color);
-            sphere.setCoefficient(coefficients);
-            sphere.setShine(shine);
-            allSpheres.push_back(sphere);
+            object = new Sphere(center, radius);
+            object->setColor(color);
+            object->setCoefficient(coefficients);
+            object->setShine(shine);
+            allObjects.push_back(object);
         }
     }
     in >> lightCount;

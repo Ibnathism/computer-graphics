@@ -180,9 +180,17 @@ public:
     Object () {}
 
     virtual void draw() {}
-    void setColor() {}
-    void setShine() {}
-    void setCoefficient() {}
+    void setColor(Color color) {
+        this->color.red = color.red;
+        this->color.green = color.green;
+        this->color.blue = color.blue;
+    }
+    void setShine(int shine) {
+        this->shine = shine;
+    }
+    void setCoefficient(vector<double> coeffs) {
+        this->coefficients = coeffs;
+    }
 
     virtual double intersect(Ray *r, double *color, int level){
         return -1.0;
@@ -207,23 +215,15 @@ public:
         reference_point = center;
         this -> radius = radius;
     }
-    void setColor(Color color) {
-        this -> color = color;
-    }
-    void setCoefficient(vector<double> coefficients) {
-        this -> coefficients = coefficients;
-    }
-    void setShine(int shine) {
-        this -> shine = shine;
-    }
 
-    void draw(int slices,int stacks)
-    {
+    void draw() override {
         glPushMatrix();
         glTranslatef(reference_point.x, reference_point.y, reference_point.z);
         glColor3f(color.red, color.green, color.blue);
         struct Point points[100][100];
         int i,j;
+        int slices = 80;
+        int stacks = 80;
         double h,r;
         //generate points
         for(i=0;i<=stacks;i++)
@@ -328,7 +328,7 @@ public:
     }
 };
 
-vector<Sphere> allSpheres;
+vector<Object *> allObjects;
 
 class Triangle : public Object {
     Point a, b, c;
