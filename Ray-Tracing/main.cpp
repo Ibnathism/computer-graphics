@@ -4,8 +4,8 @@
 #include "bitmap_image.h"
 #define WINDOW_HEIGHT 500
 #define WINDOW_WIDTH 500
-#define IMAGE_WIDTH 768
-#define IMAGE_HEIGHT 768
+#define IMAGE_WIDTH 500
+#define IMAGE_HEIGHT 500
 #define VIEW_ANGLE 80
 Point position = Point(150, 150, 50);
 Point rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
@@ -40,7 +40,7 @@ Color calculateColor(Ray &ray) {
         }
         count++;
     }
-    if (minIndex > 0) {
+    if (minIndex != NEG_INF) {
         Ray final = allObjects[minIndex]->intersect(ray, recursionLevel);
         color = final.color;
     }
@@ -57,9 +57,9 @@ void capture() {
     double dv = (double) WINDOW_HEIGHT/IMAGE_HEIGHT;
 
     ///DO we need this???
-//    Point mid_r = rightDir * (0.5 * du);
-//    Point mid_u = upDir * (0.5 * dv);
-//    topLeft = topLeft + mid_r - mid_u;
+    Point mid_r = rightDir * (0.5 * du);
+    Point mid_u = upDir * (0.5 * dv);
+    topLeft = topLeft + mid_r - mid_u;
 
     Point currentPixel, rayDirection, rayStart;
     vector<vector<Color>> nearPlaneColors;

@@ -209,24 +209,22 @@ public:
     Point reference_point;
     Color color;
     vector<double> coefficients; //ambient, diffuse, specular, reflection
-    int shine;
-    Object () {}
+    int shine{};
+    Object () = default;
 
     virtual void draw() {}
-    void setColor(Color color) {
-        this->color.red = color.red;
-        this->color.green = color.green;
-        this->color.blue = color.blue;
+    void setColor(Color c) {
+        this->color = c;
     }
-    void setShine(int shine) {
-        this->shine = shine;
+    void setShine(int s) {
+        this->shine = s;
     }
     void setCoefficient(vector<double> coeffs) {
-        this->coefficients = coeffs;
+        this->coefficients = std::move(coeffs);
     }
 
     virtual Ray intersect(Ray r, int level){
-        return Ray();
+        return {};
     }
 
     virtual Color getColor(Point point) {
@@ -304,8 +302,10 @@ public:
             double rootDiscriminant = sqrt(discriminant);
             double tPlus = (-b + rootDiscriminant) / (2.0 * a);
             double tMinus = (-b - rootDiscriminant) / (2.0 * a);
-            if (tPlus >= 0 && tMinus >= 0) t = min(tPlus, tMinus);
-            else t = max(tPlus, tMinus);
+            if (tPlus < 0 && tMinus < 0) return -1;
+            else if (tMinus > 0) return tMinus;
+            else if (tPlus > 0) return tPlus;
+            else return -1;
         } else t = - 1.0;
         return t;
     }
