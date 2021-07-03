@@ -296,7 +296,7 @@ public:
                 //cout << "abs " << normal.absolute() << endl;
                 //cout << lightDotNormal << endl;
                 //reflectedRayScaled.print();
-                Point reflectedRay = reflectedRayScaled - lightDir ; ///TODO: Changed the order
+                Point reflectedRay = reflectedRayScaled - lightDir ;
 
                 double rayDotReflect = ray.direction.dotMultiplication(reflectedRay);
                 //cout << rayDotReflect << endl;
@@ -312,18 +312,18 @@ public:
 //              std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue << std::endl;
                 newColor = newColor + addedColor;
 //              light.color.print();
-                if (shine != 1) {
-                    cout << shine << "::" << pow(phongValue, shine) << "::" << coefficients[2];
-                    light.color.print();
-                }
+//                if (shine != 1) {
+//                    cout << shine << "::" << pow(phongValue, shine) << "::" << coefficients[2];
+//                    light.color.print();
+//                }
                 //std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
                 //std::cout << "----" << coefficients[2] << std::endl;
                 addedColor = light.color * lf * pow(phongValue, shine) * coefficients[2];
 //              std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
-                if (shine != 1) {
-                    std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue
-                              << std::endl;
-                }
+//                if (shine != 1) {
+//                    std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue
+//                              << std::endl;
+//                }
                 //addedColor.print();
                 newColor = newColor + addedColor;
                 //std::cout << "----" <<newColor.red << ", " << newColor.green << ", " << newColor.blue << endl;
@@ -375,15 +375,16 @@ public:
 
         Ray newRay;
         newRay.t = getT(r);
+        if(newRay.t < 0 || level < 1) return newRay;
         //cout << newRay.t << endl;
-        Point dirScale = r.direction * r.t;
+        Point dirScale = r.direction * newRay.t;
         Point pointOfInt = r.start + dirScale;
         //cout << "MY COLOR " << this->color.red << ", " << this->color.green << ", " << this->color.blue << endl;
         newRay.color = getColor(pointOfInt) * this->coefficients[0]; //multiplying ambient
 
         newRay.color.clip();
         //cout << this->coefficients[0] << " ::::: MY COLOR :::::" << newRay.color.red << ", " << newRay.color.green << ", " << newRay.color.blue << endl;
-        if (newRay.t < 0 || level < 1) return newRay;
+
 
         Color changedColor = this->illuminate(level, pointOfInt, r, newRay.t);
         //changedColor.print();
@@ -399,8 +400,8 @@ public:
 
 class Sphere : public Object {
 public:
-    double radius{};
-    Sphere() = default;
+    double radius;
+    Sphere(){};
 
     Sphere(Point center, double radius) {
         reference_point = center;
@@ -453,7 +454,8 @@ public:
     double getT(Ray r) override {
         double t;
         Point startMinusCenter = r.start - this->reference_point;
-        double a = r.direction.dotMultiplication(r.direction);
+        //double a = r.direction.dotMultiplication(r.direction);
+        double a = 1.0;
 
         double b = 2.0 * r.direction.dotMultiplication(startMinusCenter);
         double c = startMinusCenter.dotMultiplication(startMinusCenter) - this->radius * this->radius;
@@ -501,24 +503,6 @@ public:
 
 
     void draw() override {
-//        glPushMatrix();
-//        double start = -FAR;
-//        double end = FAR;
-//        double color = 0;
-//        for (int i = start; i < end; i = i + TILE_WIDTH) {
-//            for (int j = start; j < end; j = j + TILE_WIDTH) {
-//                glColor3f(color, color, color);
-//                glBegin(GL_QUADS);{
-//                    glVertex2f(i, j);
-//                    glVertex2f(i, j+TILE_WIDTH);
-//                    glVertex2f(i+TILE_WIDTH, j+TILE_WIDTH);
-//                    glVertex2f(i+TILE_WIDTH, j);
-//                }glEnd();
-//                color = 1 - color;
-//            }
-//            color = 1 - color;
-//        }
-//        glPopMatrix();
         int nTile = FLOOR_WIDTH/TILE_WIDTH;
         if (nTile % 2 != 0) nTile = nTile + 1;
         for (int i = 0; i < nTile; ++i) {
