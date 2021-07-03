@@ -248,7 +248,7 @@ public:
         return -1;
     }
 
-    Color illuminate(int level, Point pointOfInt, Ray ray, double t) {
+    Color illuminate(int level, Point pointOfInt, Ray ray) {
         Color newColor = getColor(pointOfInt) * this->coefficients[0];
         //getColor(pointOfInt).print();
         //cout << coefficients[0] << endl;
@@ -257,7 +257,7 @@ public:
         //cout << "abs " << normal.absolute() << endl;
         double dotNormal = normal.dotMultiplication(ray.direction);
 
-        if(dotNormal > 0) normal = normal * (-1.0);
+        if(dotNormal > 0) normal = -normal;
 
         for (auto light: allLights) {
 
@@ -283,7 +283,6 @@ public:
 
             if (!isIntercept) {
 
-                double lf = 1;
                 double lightDotNormal = lightDir.dotMultiplication(normal);
                 double lambert = max(0.0, lightDotNormal);
                 //cout << lambert << endl;
@@ -299,7 +298,7 @@ public:
                 double phongValue = max(rayDotReflect, 0.0);
                 //cout << phongValue << endl;
 
-                Color addedColor = getColor(pointOfInt) * lf * lambert * coefficients[1];
+                Color addedColor = getColor(pointOfInt) * lambert * coefficients[1];
                 //addedColor.print();
                 //cout << "1...." << endl;
 
@@ -314,7 +313,7 @@ public:
 //                }
                 //std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
                 //std::cout << "----" << coefficients[2] << std::endl;
-                addedColor = light.color * lf * pow(phongValue, shine) * coefficients[2];
+                addedColor = light.color * pow(phongValue, shine) * coefficients[2];
 //              std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
 //                if (shine != 1) {
 //                    std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue
@@ -382,7 +381,7 @@ public:
         //cout << this->coefficients[0] << " ::::: MY COLOR :::::" << newRay.color.red << ", " << newRay.color.green << ", " << newRay.color.blue << endl;
 
 
-        Color changedColor = this->illuminate(level, pointOfInt, r, newRay.t);
+        Color changedColor = this->illuminate(level, pointOfInt, r);
         //changedColor.print();
         //cout << "Changed " << changedColor.red << ", " << changedColor.green << ", " << changedColor.blue << endl;
         newRay.color = changedColor;
