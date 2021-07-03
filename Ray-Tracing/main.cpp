@@ -61,11 +61,6 @@ void capture() {
     double du = (double) WINDOW_WIDTH/IMAGE_WIDTH;
     double dv = (double) WINDOW_HEIGHT/IMAGE_HEIGHT;
 
-    ///DO we need this???
-//    Point mid_r = rightDir * (0.5 * du);
-//    Point mid_u = upDir * (0.5 * dv);
-//    topLeft = topLeft + mid_r - mid_u;
-
     Point currentPixel, rayDirection, rayStart;
     vector<vector<Color>> nearPlaneColors;
     for (int i = 0; i < IMAGE_HEIGHT; ++i) {

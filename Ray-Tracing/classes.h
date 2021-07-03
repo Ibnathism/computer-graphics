@@ -190,7 +190,7 @@ public:
         glPushMatrix();
         {
             glTranslatef(this->position.x, this->position.y, this->position.z);
-            glutSolidSphere(20, slices, stacks);
+            glutSolidSphere(2, slices, stacks);
         }
         glPopMatrix();
     }
@@ -213,6 +213,8 @@ public:
         this->direction = direction;
     }
 };
+class Object;
+vector<Object *> allObjects;
 
 class Object {
 public:
@@ -236,10 +238,6 @@ public:
         this->coefficients.push_back(coeffs[3]);
     }
 
-    virtual Ray intersect(Ray r, int level){
-        return {};
-    }
-
     virtual Color getColor(Point point) {
         return color;
     }
@@ -247,8 +245,149 @@ public:
     virtual Point findNormal(Point point) {
         return Point(0, 0, 1);
     }
+
+    virtual double getT(Ray r) {
+        return -1;
+    }
+
+    Color illuminate(int level, Point pointOfInt, Ray ray) {
+        Color newColor = getColor(pointOfInt) * this->coefficients[0];
+        //getColor(pointOfInt).print();
+        //cout << coefficients[0] << endl;
+        //newColor.print();
+        Point normal = findNormal(pointOfInt);
+        //cout << "abs " << normal.absolute() << endl;
+        double dotNormal = normal.dotMultiplication(ray.direction);
+
+        if(dotNormal > 0) normal = normal * (-1.0);
+
+        for (auto light: allLights) {
+
+            Point lightDir =  pointOfInt - light.position; ///TODO: changed the order
+            double dist = lightDir.absolute();
+            lightDir = lightDir.normalizePoint();
+
+            Point lightStart = pointOfInt + lightDir;
+            Ray lightRay(lightStart, lightDir);
+
+            bool isIntercept = false;
+
+            for (auto obj : allObjects) {
+
+                Ray rayIntercept = obj->intersect(lightRay, 0);
+                if (rayIntercept.t < dist && rayIntercept.t > 0) {
+                    cout << "is intercept" << endl;
+                    isIntercept = true;
+                    break;
+                }
+            }
+
+
+            if (!isIntercept) {
+
+                double lf = 1;
+                double lightDotNormal = lightDir.dotMultiplication(normal);
+                double lambert = max(0.0, lightDotNormal);
+
+                Point reflectedRayScaled =  normal * (2.0 * lightDotNormal);
+                //normal.print();
+                //cout << "abs " << normal.absolute() << endl;
+                //cout << lightDotNormal << endl;
+                //reflectedRayScaled.print();
+                Point reflectedRay = lightDir - reflectedRayScaled; ///TODO: Changed the order
+
+                double rayDotReflect = ray.direction.dotMultiplication(reflectedRay);
+                //cout << rayDotReflect << endl;
+                double phongValue = max(rayDotReflect, 0.0);
+                //cout << phongValue << endl;
+
+                Color addedColor = getColor(pointOfInt) * lf * lambert * coefficients[1];
+                //addedColor.print();
+                //cout << "1...." << endl;
+
+
+//              std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
+//              std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue << std::endl;
+                newColor = newColor + addedColor;
+//              light.color.print();
+                //cout << phongValue << endl;
+                //std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
+//              std::cout << "----" << coefficients[2] << std::endl;
+                addedColor = light.color * lf * pow(phongValue, shine) * coefficients[2];
+//              std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
+//              std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue << std::endl;
+                //addedColor.print();
+                newColor = newColor + addedColor;
+                //std::cout << "----" <<newColor.red << ", " << newColor.green << ", " << newColor.blue << endl;
+
+            }
+            //newColor.print();
+        }
+
+
+        if (level > 0) {
+            //cout << "Now level greater than 0 ----- " << level << endl;
+            double rayDotNormal = ray.direction.dotMultiplication(normal);
+            Point scaledRayDotNormal = normal * (rayDotNormal * 2.0);
+            Point rayReflectedDir = ray.direction - scaledRayDotNormal;
+            rayReflectedDir = rayReflectedDir.normalizePoint();
+            Point rayReflectedStart = pointOfInt + rayReflectedDir;
+            Ray rayReflected(rayReflectedStart, rayReflectedDir);
+            int indexOfMin = NEG_INF;
+            double minT = INF;
+            int count = 0;
+            for (auto object : allObjects) {
+
+                Ray temp = object->intersect(rayReflected, 0);
+                //cout << temp.t << "------ TEMP T ----- " << endl;
+                if (temp.t < minT && temp.t > 0) {
+                    //cout << temp.t << "------ Inside IF ----- " << indexOfMin << endl;
+                    minT = temp.t;
+                    indexOfMin = count;
+
+                }
+                count++;
+            }
+
+            if (indexOfMin != NEG_INF)  {
+                //cout << "Index of min not equal NEG INF ----- " << indexOfMin << endl;
+                Ray next = allObjects[indexOfMin]->intersect(rayReflected, level-1);
+                Color tempNext = next.color * coefficients[3] * 1.0;
+                newColor = newColor + tempNext;
+
+
+            }
+        }
+
+
+        return newColor;
+    }
+
+    Ray intersect(Ray r, int level) {
+
+        Ray newRay;
+        newRay.t = getT(r);
+        Point dirScale = r.direction * r.t;
+        Point pointOfInt = r.start + dirScale;
+        //cout << "MY COLOR " << this->color.red << ", " << this->color.green << ", " << this->color.blue << endl;
+        newRay.color = getColor(pointOfInt) * this->coefficients[0]; //multiplying ambient
+
+        newRay.color.clip();
+        //cout << this->coefficients[0] << " ::::: MY COLOR :::::" << newRay.color.red << ", " << newRay.color.green << ", " << newRay.color.blue << endl;
+        if (newRay.t < 0 || level < 1) return newRay;
+
+        Color changedColor = this->illuminate(level, pointOfInt, r);
+        //changedColor.print();
+        //cout << "Changed " << changedColor.red << ", " << changedColor.green << ", " << changedColor.blue << endl;
+        newRay.color = changedColor;
+
+        newRay.color.clip();
+
+        return newRay;
+
+    }
 };
-vector<Object *> allObjects;
+
 class Sphere : public Object {
 public:
     double radius{};
@@ -302,7 +441,7 @@ public:
         glPopMatrix();
     }
 
-    double getT(Ray r) {
+    double getT(Ray r) override {
         double t;
         Point startMinusCenter = r.start - this->reference_point;
         double a = r.direction.dotMultiplication(r.direction);
@@ -338,139 +477,7 @@ public:
         return temp;
     }
 
-    Color illuminate(int level, Point pointOfInt, Ray ray) {
-        Color newColor = getColor(pointOfInt) * this->coefficients[0];
-        //getColor(pointOfInt).print();
-        //cout << coefficients[0] << endl;
-        //newColor.print();
-        Point normal = findNormal(pointOfInt);
-        //cout << "abs " << normal.absolute() << endl;
-        double dotNormal = normal.dotMultiplication(ray.direction);
 
-        if(dotNormal > 0) normal = normal * (-1.0);
-
-        for (auto light: allLights) {
-
-            Point lightDir =  pointOfInt - light.position; ///TODO: changed the order
-            double dist = lightDir.absolute();
-            lightDir = lightDir.normalizePoint();
-
-            Point lightStart = pointOfInt + lightDir;
-            Ray lightRay(lightStart, lightDir);
-
-            bool isIntercept = false;
-
-            for (auto obj : allObjects) {
-
-                Ray rayIntercept = obj->intersect(lightRay, 0);
-                if (rayIntercept.t < dist && rayIntercept.t > 0) {
-                    isIntercept = true;
-                    break;
-                }
-            }
-
-
-            if (!isIntercept) {
-
-                double lf = 1;
-                double lightDotNormal = lightDir.dotMultiplication(normal);
-                double lambert = max(0.0, lightDotNormal);
-
-                Point reflectedRayScaled =  normal * (2.0 * lightDotNormal);
-                //normal.print();
-                //cout << "abs " << normal.absolute() << endl;
-                //cout << lightDotNormal << endl;
-                //reflectedRayScaled.print();
-                Point reflectedRay = lightDir - reflectedRayScaled; ///TODO: Changed the order
-
-                double rayDotReflect = ray.direction.dotMultiplication(reflectedRay);
-                //cout << rayDotReflect << endl;
-                double phongValue = max(rayDotReflect, 0.0);
-                //cout << phongValue << endl;
-
-                Color addedColor = getColor(pointOfInt) * lf * lambert * coefficients[1];
-                //addedColor.print();
-                //cout << "1...." << endl;
-
-
-//                std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
-//                std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue << std::endl;
-                newColor = newColor + addedColor;
-//                light.color.print();
-                cout << phongValue << endl;
-//                std::cout << "----" << coefficients[2] << std::endl;
-                addedColor = light.color * lf * pow(phongValue, shine) * coefficients[2];
-//                std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
-//                std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue << std::endl;
-                addedColor.print();
-                newColor = newColor + addedColor;
-
-            }
-            //newColor.print();
-        }
-
-
-        if (level > 0) {
-            //cout << "Now level greater than 0 ----- " << level << endl;
-            double rayDotNormal = ray.direction.dotMultiplication(normal);
-            Point scaledRayDotNormal = normal * (rayDotNormal * 2.0);
-            Point rayReflectedDir = ray.direction - scaledRayDotNormal;
-            rayReflectedDir = rayReflectedDir.normalizePoint();
-            Point rayReflectedStart = pointOfInt + rayReflectedDir;
-            Ray rayReflected(rayReflectedStart, rayReflectedDir);
-            int indexOfMin = NEG_INF;
-            double minT = INF;
-            int count = 0;
-            for (auto object : allObjects) {
-
-                Ray temp = object->intersect(rayReflected, 0);
-                //cout << temp.t << "------ TEMP T ----- " << endl;
-                if (temp.t < minT && temp.t > 0) {
-                    //cout << temp.t << "------ Inside IF ----- " << indexOfMin << endl;
-                    minT = temp.t;
-                    indexOfMin = count;
-
-                }
-                count++;
-            }
-
-            if (indexOfMin != NEG_INF)  {
-                //cout << "Index of min not equal NEG INF ----- " << indexOfMin << endl;
-                Ray next = allObjects[indexOfMin]->intersect(rayReflected, level-1);
-                Color tempNext = next.color * coefficients[3] * 1.0;
-                newColor = newColor + tempNext;
-
-
-            }
-        }
-
-
-        return newColor;
-    }
-
-    Ray intersect(Ray r, int level) override {
-
-        Ray newRay;
-        newRay.t = getT(r);
-        Point dirScale = r.direction * r.t;
-        Point pointOfInt = r.start + dirScale;
-        //cout << "MY COLOR " << this->color.red << ", " << this->color.green << ", " << this->color.blue << endl;
-        newRay.color = getColor(pointOfInt) * this->coefficients[0]; //multiplying ambient
-
-        newRay.color.clip();
-        //cout << this->coefficients[0] << " ::::: MY COLOR :::::" << newRay.color.red << ", " << newRay.color.green << ", " << newRay.color.blue << endl;
-        if (newRay.t < 0 || level < 1) return newRay;
-
-        Color changedColor = this->illuminate(level, pointOfInt, r);
-        //changedColor.print();
-        //cout << "Changed " << changedColor.red << ", " << changedColor.green << ", " << changedColor.blue << endl;
-        newRay.color = changedColor;
-
-        newRay.color.clip();
-
-        return newRay;
-
-    }
 };
 
 
