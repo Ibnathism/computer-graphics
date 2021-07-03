@@ -38,14 +38,15 @@ Color calculateColor(Ray &ray) {
     Color color;
     int minIndex = NEG_INF;
     double minT = INF;
-    int count = 0;
+    int count = -1;
     for (auto object: allObjects) {
+        count++;
         Ray temp = object->intersect(ray, 0);
         if (temp.t < minT && temp.t > 0) {
             minT = temp.t;
             minIndex = count;
         }
-        count++;
+
     }
     if (minIndex != NEG_INF) {
         Ray final = allObjects[minIndex]->intersect(ray, recursionLevel);
@@ -277,10 +278,6 @@ void loadData() {
 
 void init(){
     clear();
-//    position = Point(150, 150, 50);
-//    rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
-//    upDir = Point(0,0,1);
-//    lookDir = upDir.crossMultiplication(rightDir);
     loadData();
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();

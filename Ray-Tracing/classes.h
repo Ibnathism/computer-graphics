@@ -185,7 +185,7 @@ public:
         this->color = color;
     }
 
-    void draw(int slices, int stacks) {
+    void draw(int slices, int stacks) const {
         glColor3f(this->color.red, this->color.green, this->color.blue);
         glPushMatrix();
         {
@@ -222,12 +222,13 @@ public:
     Point reference_point;
     Color color;
     vector<double> coefficients; //ambient, diffuse, specular, reflection
-    int shine{};
-    Object () = default;
+    int shine;
 
     virtual void draw() {}
     void setColor(Color c) {
-        this->color = c;
+        this->color.red = c.red;
+        this->color.green = c.green;
+        this->color.blue = c.blue;
     }
     void setShine(int s) {
         this->shine = s;
@@ -251,7 +252,7 @@ public:
         return -1;
     }
 
-    Color illuminate(int level, Point pointOfInt, Ray ray) {
+    Color illuminate(int level, Point pointOfInt, Ray ray, double t) {
         Color newColor = getColor(pointOfInt) * this->coefficients[0];
         //getColor(pointOfInt).print();
         //cout << coefficients[0] << endl;
@@ -264,7 +265,7 @@ public:
 
         for (auto light: allLights) {
 
-            Point lightDir =  pointOfInt - light.position; ///TODO: changed the order
+            Point lightDir = light.position- pointOfInt ; ///TODO: changed the order
             double dist = lightDir.absolute();
             lightDir = lightDir.normalizePoint();
 
@@ -289,13 +290,13 @@ public:
                 double lf = 1;
                 double lightDotNormal = lightDir.dotMultiplication(normal);
                 double lambert = max(0.0, lightDotNormal);
-
+                //cout << lambert << endl;
                 Point reflectedRayScaled =  normal * (2.0 * lightDotNormal);
                 //normal.print();
                 //cout << "abs " << normal.absolute() << endl;
                 //cout << lightDotNormal << endl;
                 //reflectedRayScaled.print();
-                Point reflectedRay = lightDir - reflectedRayScaled; ///TODO: Changed the order
+                Point reflectedRay = reflectedRayScaled - lightDir ; ///TODO: Changed the order
 
                 double rayDotReflect = ray.direction.dotMultiplication(reflectedRay);
                 //cout << rayDotReflect << endl;
@@ -311,12 +312,18 @@ public:
 //              std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue << std::endl;
                 newColor = newColor + addedColor;
 //              light.color.print();
-                //cout << phongValue << endl;
+                if (shine != 1) {
+                    cout << shine << "::" << pow(phongValue, shine) << "::" << coefficients[2];
+                    light.color.print();
+                }
                 //std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
-//              std::cout << "----" << coefficients[2] << std::endl;
+                //std::cout << "----" << coefficients[2] << std::endl;
                 addedColor = light.color * lf * pow(phongValue, shine) * coefficients[2];
 //              std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
-//              std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue << std::endl;
+                if (shine != 1) {
+                    std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue
+                              << std::endl;
+                }
                 //addedColor.print();
                 newColor = newColor + addedColor;
                 //std::cout << "----" <<newColor.red << ", " << newColor.green << ", " << newColor.blue << endl;
@@ -336,9 +343,9 @@ public:
             Ray rayReflected(rayReflectedStart, rayReflectedDir);
             int indexOfMin = NEG_INF;
             double minT = INF;
-            int count = 0;
+            int count = -1;
             for (auto object : allObjects) {
-
+                count++;
                 Ray temp = object->intersect(rayReflected, 0);
                 //cout << temp.t << "------ TEMP T ----- " << endl;
                 if (temp.t < minT && temp.t > 0) {
@@ -347,7 +354,7 @@ public:
                     indexOfMin = count;
 
                 }
-                count++;
+
             }
 
             if (indexOfMin != NEG_INF)  {
@@ -368,6 +375,7 @@ public:
 
         Ray newRay;
         newRay.t = getT(r);
+        //cout << newRay.t << endl;
         Point dirScale = r.direction * r.t;
         Point pointOfInt = r.start + dirScale;
         //cout << "MY COLOR " << this->color.red << ", " << this->color.green << ", " << this->color.blue << endl;
@@ -377,7 +385,7 @@ public:
         //cout << this->coefficients[0] << " ::::: MY COLOR :::::" << newRay.color.red << ", " << newRay.color.green << ", " << newRay.color.blue << endl;
         if (newRay.t < 0 || level < 1) return newRay;
 
-        Color changedColor = this->illuminate(level, pointOfInt, r);
+        Color changedColor = this->illuminate(level, pointOfInt, r, newRay.t);
         //changedColor.print();
         //cout << "Changed " << changedColor.red << ", " << changedColor.green << ", " << changedColor.blue << endl;
         newRay.color = changedColor;
