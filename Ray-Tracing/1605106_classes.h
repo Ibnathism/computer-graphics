@@ -10,9 +10,8 @@
 #include <utility>
 #include <vector>
 #define INF INT_MAX
-#define NEG_INF (-100)
+#define MINUS_INFINITY (-1000)
 #define pi (2*acos(0.0))
-#define FAR 1000
 #define FLOOR_WIDTH 1000
 #define TILE_WIDTH 20
 
@@ -138,12 +137,9 @@ public:
     }
 
     void clip() {
-        if (red < 0) red = 0;
-        if (red > 255) red = 255;
-        if (green < 0) green = 0;
-        if (green > 255) green = 255;
-        if (blue < 0) blue = 0;
-        if (blue > 255) blue = 255;
+        red = red < 0 ? 0 : (red > 255 ? 255 : red);
+        green = green < 0 ? 0 : (green > 255 ? 255 : green);
+        blue = blue < 0 ? 0 : (blue > 255 ? 255 : blue);
     }
 
     Color operator*(double scalingConstant) const {
@@ -265,7 +261,7 @@ public:
 
         for (auto light: allLights) {
 
-            Point lightDir = light.position- pointOfInt ; ///TODO: changed the order
+            Point lightDir = light.position - pointOfInt;
             double dist = lightDir.absolute();
             lightDir = lightDir.normalizePoint();
 
@@ -341,7 +337,7 @@ public:
             rayReflectedDir = rayReflectedDir.normalizePoint();
             Point rayReflectedStart = pointOfInt + rayReflectedDir;
             Ray rayReflected(rayReflectedStart, rayReflectedDir);
-            int indexOfMin = NEG_INF;
+            int indexOfMin = MINUS_INFINITY;
             double minT = INF;
             int count = -1;
             for (auto object : allObjects) {
@@ -357,10 +353,10 @@ public:
 
             }
 
-            if (indexOfMin != NEG_INF)  {
+            if (indexOfMin != MINUS_INFINITY)  {
                 //cout << "Index of min not equal NEG INF ----- " << indexOfMin << endl;
                 Ray next = allObjects[indexOfMin]->intersect(rayReflected, level-1);
-                Color tempNext = next.color * coefficients[3] * 1.0;
+                Color tempNext = next.color * coefficients[3];
                 newColor = newColor + tempNext;
 
 
@@ -556,8 +552,6 @@ public:
 
 };
 
-Floor baseFloor;
-
 
 class Triangle : public Object {
     Point a, b, c;
@@ -577,3 +571,5 @@ class Triangle : public Object {
         shine = shine;
     }
 };
+
+

@@ -1,62 +1,36 @@
 #include <GL/glut.h>
 #include<bits/stdc++.h>
-#include "functions.h"
+#include "1605106_classes.h"
 #include "bitmap_image.h"
 #define WINDOW_HEIGHT 500
 #define WINDOW_WIDTH 500
-#define IMAGE_WIDTH 768
-#define IMAGE_HEIGHT 768
 #define VIEW_ANGLE 80
+
 Point position = Point(150, 150, 50);
 Point rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
 Point upDir = Point(0,0,1);
 Point lookDir = upDir.crossMultiplication(rightDir);
 
-//Point position = Point(0, 0, 200);
-//Point rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
-//Point lookDir = Point(0,0,1);
-//Point upDir = lookDir.crossMultiplication(rightDir);
 
 //Point position, rightDir, lookDir, upDir;
 
 double pixels;
 int recursionLevel, objectCount, lightCount;
 
-void updateImage(vector<vector<Color>> &plane) {
-    //std::cout << "Now i will generate image" << std::endl;
-    bitmap_image bitmapImage(IMAGE_WIDTH, IMAGE_HEIGHT);
-    for (int i = 0; i < IMAGE_HEIGHT; ++i) {
-        for (int j = 0; j < IMAGE_WIDTH; ++j) {
-            //if (plane[i][j].red > 0 || plane[i][j].green > 0 || plane[i][j].blue > 0) plane[i][j].print();
-            bitmapImage.set_pixel(j, i, plane[i][j].red*255, plane[i][j].green*255, plane[i][j].blue*255);
-        }
-    }
-    bitmapImage.save_image("1605106.bmp");
+Point rotateOneAlongAnother(Point &toBeRotated, Point &respective, double angleOfRotation) {
+    Point temp = respective.crossMultiplication(toBeRotated);
+    double angleInRadian = angleOfRotation*pi / 180.0;
+    Point component1 = toBeRotated.constantScale(cos(angleInRadian));
+    Point component2 = temp.constantScale(sin(angleInRadian));
+    Point answer = component1 + component2;
+    return answer;
 }
-Color calculateColor(Ray &ray) {
-    //std::cout << "Now i will calculate color" << std::endl;
-    Color color;
-    int minIndex = NEG_INF;
-    double minT = INF;
-    int count = -1;
-    for (auto object: allObjects) {
-        count++;
-        Ray temp = object->intersect(ray, 0);
-        if (temp.t < minT && temp.t > 0) {
-            minT = temp.t;
-            minIndex = count;
-        }
 
-    }
-    if (minIndex != NEG_INF) {
-        Ray final = allObjects[minIndex]->intersect(ray, recursionLevel);
 
-        color = final.color;
-
-    }
-    //cout << "MY COLOR " << color.red << ", " << color.green << ", " << color.blue << endl;
-    color.clip();
-    return color;
+void clear() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClearColor(0,0,0,0);	//color black
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 void capture() {
     double planeDistance = (WINDOW_HEIGHT/2.0)/tan((pi/180.0)*(VIEW_ANGLE/2.0));
@@ -65,14 +39,14 @@ void capture() {
     Point topLeft_u = upDir * (WINDOW_HEIGHT/2.0);
     Point topLeft = position + topLeft_l - topLeft_r + topLeft_u;
 
-    double du = (double) WINDOW_WIDTH/IMAGE_WIDTH;
-    double dv = (double) WINDOW_HEIGHT/IMAGE_HEIGHT;
+    double du = (double) WINDOW_WIDTH/pixels;
+    double dv = (double) WINDOW_HEIGHT/pixels;
 
     Point currentPixel, rayDirection, rayStart;
     vector<vector<Color>> nearPlaneColors;
-    for (int i = 0; i < IMAGE_HEIGHT; ++i) {
+    for (int i = 0; i < pixels; ++i) {
         nearPlaneColors.emplace_back();
-        for (int j = 0; j < IMAGE_WIDTH; ++j) {
+        for (int j = 0; j < pixels; ++j) {
             Point cp_r =  rightDir * (j * du);
             Point cp_u = upDir * (i * dv);
             currentPixel = topLeft + cp_r - cp_u;
@@ -82,14 +56,44 @@ void capture() {
             rayDirection = rayDirection.normalizePoint();
 
             Ray eyeToDir(rayStart, rayDirection);
-            Color temp = calculateColor(eyeToDir);
+            //Color temp = calculateColor(eyeToDir);
+            //std::cout << "Now i will calculate color" << std::endl;
+            Color color;
+            int minIndex = MINUS_INFINITY;
+            double minT = INF;
+            int count = -1;
+            for (auto object: allObjects) {
+                count++;
+                Ray temp = object->intersect(eyeToDir, 0);
+                if (temp.t < minT && temp.t > 0) {
+                    minT = temp.t;
+                    minIndex = count;
+                }
+
+            }
+            if (minIndex != MINUS_INFINITY) {
+                Ray final = allObjects[minIndex]->intersect(eyeToDir, recursionLevel);
+
+                color = final.color;
+
+            }
+            //cout << "MY COLOR " << color.red << ", " << color.green << ", " << color.blue << endl;
+            color.clip();
+
             //if (temp.red > 0 || temp.green > 0 || temp.blue > 0) temp.print();
-            nearPlaneColors[i].push_back(temp);
+            nearPlaneColors[i].push_back(color);
 
         }
     }
 
-    updateImage(nearPlaneColors);
+    bitmap_image bitmapImage(pixels, pixels);
+    for (int i = 0; i < pixels; ++i) {
+        for (int j = 0; j < pixels; ++j) {
+            //if (plane[i][j].red > 0 || plane[i][j].green > 0 || plane[i][j].blue > 0) plane[i][j].print();
+            bitmapImage.set_pixel(j, i, nearPlaneColors[i][j].red*255, nearPlaneColors[i][j].green*255, nearPlaneColors[i][j].blue*255);
+        }
+    }
+    bitmapImage.save_image("1605106.bmp");
 
 
 }
