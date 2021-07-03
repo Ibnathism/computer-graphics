@@ -4,14 +4,20 @@
 #include "bitmap_image.h"
 #define WINDOW_HEIGHT 500
 #define WINDOW_WIDTH 500
-#define IMAGE_WIDTH 500
-#define IMAGE_HEIGHT 500
+#define IMAGE_WIDTH 768
+#define IMAGE_HEIGHT 768
 #define VIEW_ANGLE 80
 Point position = Point(150, 150, 50);
 Point rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
 Point upDir = Point(0,0,1);
 Point lookDir = upDir.crossMultiplication(rightDir);
 
+//Point position = Point(0, 0, 200);
+//Point rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
+//Point lookDir = Point(0,0,1);
+//Point upDir = lookDir.crossMultiplication(rightDir);
+
+//Point position, rightDir, lookDir, upDir;
 
 double pixels;
 int recursionLevel, objectCount, lightCount;
@@ -186,9 +192,9 @@ void display(){
     glMatrixMode(GL_MODELVIEW);
     //glColor3f(1, 1, 1);
     //drawAxes();
-    baseFloor.draw();
-    for (int i = 0; i < allObjects.size(); ++i) {
-        allObjects[i]->draw();
+    //baseFloor.draw();
+    for (auto obj: allObjects) {
+        obj->draw();
     }
     for (int i = 0; i < lightCount; ++i) {
         allLights[i].draw(7, 7);
@@ -210,13 +216,13 @@ void loadData() {
     Object *object;
     for (int i = 0; i < objectCount; ++i) {
         in >> type;
-        Point center;
-        double radius;
-        double ambient, diffuse, specular, reflection;
-        int shine;
-        Color color;
-        vector<double> coefficients;
         if (type == "sphere") {
+            Point center;
+            double radius;
+            double ambient, diffuse, specular, reflection;
+            int shine;
+            Color color;
+            vector<double> coefficients;
             in >> center.x >> center.y >> center.z;
             in >> radius;
             in >> color.red >> color.green >> color.blue;
@@ -233,6 +239,18 @@ void loadData() {
             allObjects.push_back(object);
         }
     }
+    vector<double> floorCoeffs;
+    floorCoeffs.push_back(0.4);
+    floorCoeffs.push_back(0.1);
+    floorCoeffs.push_back(0.2);
+    floorCoeffs.push_back(0.4);
+    object = new Floor();
+    object->setCoefficient(floorCoeffs);
+    object->setShine(1);
+
+    allObjects.push_back(object);
+
+
     in >> lightCount;
     for (int i = 0; i < lightCount; ++i) {
         Point lightPosition;
@@ -259,6 +277,10 @@ void loadData() {
 
 void init(){
     clear();
+//    position = Point(150, 150, 50);
+//    rightDir = Point(-1/sqrt(2.0), 1/sqrt(2.0), 0);
+//    upDir = Point(0,0,1);
+//    lookDir = upDir.crossMultiplication(rightDir);
     loadData();
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();

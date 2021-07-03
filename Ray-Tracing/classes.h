@@ -213,6 +213,7 @@ public:
         this->direction = direction;
     }
 };
+
 class Object;
 vector<Object *> allObjects;
 
@@ -276,7 +277,7 @@ public:
 
                 Ray rayIntercept = obj->intersect(lightRay, 0);
                 if (rayIntercept.t < dist && rayIntercept.t > 0) {
-                    cout << "is intercept" << endl;
+                    //cout << "is intercept" << endl;
                     isIntercept = true;
                     break;
                 }
@@ -481,6 +482,90 @@ public:
 };
 
 
+class Floor : public Object {
+public:
+    double myX, myY;
+    Floor() {
+        reference_point = Point(-FLOOR_WIDTH/2.0, -FLOOR_WIDTH/2.0, 0);
+        myX = -FLOOR_WIDTH/2.0;
+        myY = -FLOOR_WIDTH/2.0;
+    }
+
+
+    void draw() override {
+//        glPushMatrix();
+//        double start = -FAR;
+//        double end = FAR;
+//        double color = 0;
+//        for (int i = start; i < end; i = i + TILE_WIDTH) {
+//            for (int j = start; j < end; j = j + TILE_WIDTH) {
+//                glColor3f(color, color, color);
+//                glBegin(GL_QUADS);{
+//                    glVertex2f(i, j);
+//                    glVertex2f(i, j+TILE_WIDTH);
+//                    glVertex2f(i+TILE_WIDTH, j+TILE_WIDTH);
+//                    glVertex2f(i+TILE_WIDTH, j);
+//                }glEnd();
+//                color = 1 - color;
+//            }
+//            color = 1 - color;
+//        }
+//        glPopMatrix();
+        int nTile = FLOOR_WIDTH/TILE_WIDTH;
+        if (nTile % 2 != 0) nTile = nTile + 1;
+        for (int i = 0; i < nTile; ++i) {
+            for (int j = 0; j < nTile; ++j) {
+                double tempX = i * TILE_WIDTH + myX;
+                double tempY = j * TILE_WIDTH + myY;
+                int r1 = i % 2;
+                int r2 = j % 2;
+                if ((r1 == 1 && r2 == 1) || (r1 == 0 && r2 == 0)) glColor3f(1.0, 1.0, 1.0);
+                else glColor3f(0, 0, 0);
+
+                glPushMatrix(); {
+                    glBegin(GL_QUADS);{
+                    glVertex3f(tempX, tempY, 0);
+                    glVertex3f(tempX, tempY+TILE_WIDTH, 0);
+                    glVertex3f(tempX+TILE_WIDTH, tempY+TILE_WIDTH, 0);
+                    glVertex3f(tempX+TILE_WIDTH, tempY, 0);
+                }glEnd();
+                } glPopMatrix();
+            }
+        }
+    }
+
+    double getT(Ray r) override {
+        double zStart = r.start.z;
+        double zDir = r.direction.z;
+        return -(zStart/zDir);
+    }
+    Point findNormal(Point point) override {
+        Point temp(0, 0, 1);
+        return temp;
+    }
+    Color getColor(Point point) override {
+        double horizontal = point.x + (FLOOR_WIDTH/2.0);
+        horizontal = horizontal/TILE_WIDTH;
+        double vertical = point.y + (FLOOR_WIDTH/2.0);
+        vertical = vertical/TILE_WIDTH;
+        Point p(horizontal, vertical, 0);
+
+        int r1 = (int)p.x % 2;
+        int r2 = (int)p.y % 2;
+
+        if (r1 < 0) r1 = (-1) * r1;
+        if (r2 < 0) r2 = (-1) * r2;
+        Color c;
+        if ((r1 == 1 && r2 == 1) || (r1 == 0 && r2 == 0)) c = Color(1, 1,1);
+        else c = Color(0, 0, 0);
+
+        return c;
+    }
+
+};
+
+Floor baseFloor;
+
 
 class Triangle : public Object {
     Point a, b, c;
@@ -500,35 +585,3 @@ class Triangle : public Object {
         shine = shine;
     }
 };
-
-
-class Floor : public Object {
-public:
-    Floor() {
-        reference_point = Point(-FLOOR_WIDTH/2, -FLOOR_WIDTH/2, 0);
-    }
-
-    void draw() {
-        glPushMatrix();
-        double start = -FAR;
-        double end = FAR;
-        double color = 0;
-        for (int i = start; i < end; i = i + TILE_WIDTH) {
-            for (int j = start; j < end; j = j + TILE_WIDTH) {
-                glColor3f(color, color, color);
-                glBegin(GL_QUADS);{
-                    glVertex2f(i, j);
-                    glVertex2f(i, j+TILE_WIDTH);
-                    glVertex2f(i+TILE_WIDTH, j+TILE_WIDTH);
-                    glVertex2f(i+TILE_WIDTH, j);
-                }glEnd();
-                color = 1 - color;
-            }
-            color = 1 - color;
-        }
-        glPopMatrix();
-    }
-};
-
-Floor baseFloor;
-
