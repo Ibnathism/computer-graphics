@@ -17,11 +17,12 @@ double pixels;
 int recursionLevel, objectCount, lightCount;
 
 void updateImage(vector<vector<Color>> &plane) {
-    std::cout << "Now i will generate image" << std::endl;
+    //std::cout << "Now i will generate image" << std::endl;
     bitmap_image bitmapImage(IMAGE_WIDTH, IMAGE_HEIGHT);
     for (int i = 0; i < IMAGE_HEIGHT; ++i) {
         for (int j = 0; j < IMAGE_WIDTH; ++j) {
-            bitmapImage.set_pixel(j, i, plane[i][j].red, plane[i][j].green, plane[i][j].blue);
+            //if (plane[i][j].red > 0 || plane[i][j].green > 0 || plane[i][j].blue > 0) plane[i][j].print();
+            bitmapImage.set_pixel(j, i, plane[i][j].red*255, plane[i][j].green*255, plane[i][j].blue*255);
         }
     }
     bitmapImage.save_image("1605106.bmp");
@@ -44,7 +45,10 @@ Color calculateColor(Ray &ray) {
         Ray final = allObjects[minIndex]->intersect(ray, recursionLevel);
 
         color = final.color;
+
     }
+    //cout << "MY COLOR " << color.red << ", " << color.green << ", " << color.blue << endl;
+    color.clip();
     return color;
 }
 void capture() {
@@ -58,9 +62,9 @@ void capture() {
     double dv = (double) WINDOW_HEIGHT/IMAGE_HEIGHT;
 
     ///DO we need this???
-    Point mid_r = rightDir * (0.5 * du);
-    Point mid_u = upDir * (0.5 * dv);
-    topLeft = topLeft + mid_r - mid_u;
+//    Point mid_r = rightDir * (0.5 * du);
+//    Point mid_u = upDir * (0.5 * dv);
+//    topLeft = topLeft + mid_r - mid_u;
 
     Point currentPixel, rayDirection, rayStart;
     vector<vector<Color>> nearPlaneColors;
@@ -73,10 +77,12 @@ void capture() {
 
             rayStart = position;
             rayDirection = currentPixel - position;
-            rayDirection.normalizePoint();
+            rayDirection = rayDirection.normalizePoint();
 
             Ray eyeToDir(rayStart, rayDirection);
-            nearPlaneColors[i].push_back(calculateColor(eyeToDir));
+            Color temp = calculateColor(eyeToDir);
+            //if (temp.red > 0 || temp.green > 0 || temp.blue > 0) temp.print();
+            nearPlaneColors[i].push_back(temp);
 
         }
     }
@@ -113,6 +119,7 @@ void keyboardListener(unsigned char key, int x,int y){
         case '5':
             rightDir = rotateOneAlongAnother(rightDir, lookDir, negativeAngle);
             upDir = rightDir.crossMultiplication(lookDir);
+            upDir = rightDir.crossMultiplication(lookDir);
             //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
         case '6':
@@ -120,8 +127,17 @@ void keyboardListener(unsigned char key, int x,int y){
             upDir = rightDir.crossMultiplication(lookDir);
             //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
+        case '7':
+            position = position + upDir;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            break;
+        case '8':
+            position = position - upDir;
+            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
+            break;
         case '0':
             capture();
+
             std::cout << "Image Captured" << std::endl;
             break;
         default:
@@ -146,14 +162,7 @@ void specialKeyListener(int key, int x,int y){
             position = position - rightDir;
             //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
             break;
-        case GLUT_KEY_PAGE_UP:
-            position = position + upDir;
-            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
-            break;
-        case GLUT_KEY_PAGE_DOWN:
-            position = position - upDir;
-            //std::cout << "Position: " << position.x << " , " << position.y << " , " << position.z << std::endl;
-            break;
+
         default:
             break;
     }
@@ -182,7 +191,7 @@ void display(){
     glMatrixMode(GL_MODELVIEW);
     //glColor3f(1, 1, 1);
     //drawAxes();
-    //baseFloor.draw();
+    baseFloor.draw();
     for (int i = 0; i < allObjects.size(); ++i) {
         allObjects[i]->draw();
     }
@@ -238,7 +247,19 @@ void loadData() {
         Light light(lightPosition, lightColor);
         allLights.push_back(light);
     }
+//    for (int i = 0; i < lightCount; ++i) {
+//        allLights[i].color.print();
+//        allLights[i].position.print();
+//    }
+    //std::cout << allLights.size() <<std::endl;
     in.close();
+//    Point p(125, 223, 65.7);
+//    double x = p.dotMultiplication(p);
+//    std::cout << x << std::endl;
+//    Color c1(100, 100, 50);
+//    Color c2 = c1 * 5 * 2.0;
+//    c2 = c2 + c1;
+//    std::cout << c2.red << ", " << c2.green << ", " << c2.blue << std::endl;
 }
 
 void init(){

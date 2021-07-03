@@ -94,18 +94,23 @@ public:
 
     Point normalizePoint() const {
         double temp = sqrt(this->x*this->x + this->y*this->y + this->z*this->z);
-        return *this/temp;
+        //Point norm = *this/temp;
+        Point norm = Point(x, y, z);
+        norm = norm/temp;
+        //cout << x.absolute() << endl;
+        return norm;
     }
 
-    double absolute() {
+    double absolute() const {
         double temp = sqrt(x*x + y*y + z*z);
         return temp;
     }
 
-    void operator=(const Point &point) {
+    Point& operator=(const Point &point) {
         this->x = point.x;
         this->y = point.y;
         this->z = point.z;
+        return *this;
     }
 
     void print() const {
@@ -143,9 +148,9 @@ public:
 
     Color operator*(double scalingConstant) const {
         Color temp;
-        temp.red = (double) this->red * scalingConstant;
-        temp.green = (double) this->green * scalingConstant;
-        temp.blue = (double) this->blue * scalingConstant;
+        temp.red = this->red * scalingConstant;
+        temp.green = this->green * scalingConstant;
+        temp.blue = this->blue * scalingConstant;
         return temp;
     }
 
@@ -157,10 +162,15 @@ public:
         return temp;
     }
 
-    void operator=(const Color &color) {
+    Color& operator=(const Color &color) {
         this->red = color.red;
         this->green = color.green;
         this->blue = color.blue;
+        return *this;
+    }
+
+    void print() {
+        cout << "(" << this->red << ", " << this->green << ", " << this->blue << ")" << endl;
     }
 
 
@@ -171,8 +181,8 @@ public:
     Point position;
     Color color;
     Light(Point position, Color color) {
-        position =  position;
-        color = color;
+        this->position =  position;
+        this->color = color;
     }
 
     void draw(int slices, int stacks) {
@@ -180,7 +190,7 @@ public:
         glPushMatrix();
         {
             glTranslatef(this->position.x, this->position.y, this->position.z);
-            glutSolidSphere(0.5, slices, stacks);
+            glutSolidSphere(20, slices, stacks);
         }
         glPopMatrix();
     }
@@ -220,10 +230,13 @@ public:
         this->shine = s;
     }
     void setCoefficient(vector<double> coeffs) {
-        this->coefficients = std::move(coeffs);
+        this->coefficients.push_back(coeffs[0]);
+        this->coefficients.push_back(coeffs[1]);
+        this->coefficients.push_back(coeffs[2]);
+        this->coefficients.push_back(coeffs[3]);
     }
 
-    virtual Ray intersect(Ray &r, int level){
+    virtual Ray intersect(Ray r, int level){
         return {};
     }
 
@@ -293,11 +306,14 @@ public:
         double t;
         Point startMinusCenter = r.start - this->reference_point;
         double a = r.direction.dotMultiplication(r.direction);
+
         double b = 2.0 * r.direction.dotMultiplication(startMinusCenter);
         double c = startMinusCenter.dotMultiplication(startMinusCenter) - this->radius * this->radius;
         double discriminant = b * b - 4.0 * a * c; //b^2 - 4ac
 
         if (discriminant >= 0) {
+            //cout << "a " << a << "  b  " << b << "  c   " << c << endl;
+            //cout << " INSIDE GET T :: Discriminant " << discriminant << endl;
             double rootDiscriminant = sqrt(discriminant);
             double tPlus = (-b + rootDiscriminant) / (2.0 * a);
             double tMinus = (-b - rootDiscriminant) / (2.0 * a);
@@ -306,6 +322,7 @@ public:
             else if (tMinus < 0) t = tPlus;
             else return -1;
         } else t = - 1.0;
+        //cout << " INSIDE GET T " << t << endl;
         return t;
     }
 
@@ -316,20 +333,27 @@ public:
     Point findNormal(Point point) override {
         Point temp;
         temp = point - reference_point;
-        return temp.normalizePoint();
+        temp = temp.normalizePoint();
+        //cout << "abs " << temp.absolute() << endl;
+        return temp;
     }
+
     Color illuminate(int level, Point pointOfInt, Ray ray) {
         Color newColor = getColor(pointOfInt) * this->coefficients[0];
-
+        //getColor(pointOfInt).print();
+        //cout << coefficients[0] << endl;
+        //newColor.print();
         Point normal = findNormal(pointOfInt);
+        //cout << "abs " << normal.absolute() << endl;
         double dotNormal = normal.dotMultiplication(ray.direction);
 
         if(dotNormal > 0) normal = normal * (-1.0);
 
         for (auto light: allLights) {
-            Point lightDir = light.position - pointOfInt;
+
+            Point lightDir =  pointOfInt - light.position; ///TODO: changed the order
             double dist = lightDir.absolute();
-            lightDir.normalizePoint();
+            lightDir = lightDir.normalizePoint();
 
             Point lightStart = pointOfInt + lightDir;
             Ray lightRay(lightStart, lightDir);
@@ -347,44 +371,62 @@ public:
 
 
             if (!isIntercept) {
+
                 double lf = 1;
                 double lightDotNormal = lightDir.dotMultiplication(normal);
                 double lambert = max(0.0, lightDotNormal);
+
                 Point reflectedRayScaled =  normal * (2.0 * lightDotNormal);
-                Point reflectedRay = reflectedRayScaled - lightDir;
+                //normal.print();
+                //cout << "abs " << normal.absolute() << endl;
+                //cout << lightDotNormal << endl;
+                //reflectedRayScaled.print();
+                Point reflectedRay = lightDir - reflectedRayScaled; ///TODO: Changed the order
 
                 double rayDotReflect = ray.direction.dotMultiplication(reflectedRay);
-
+                //cout << rayDotReflect << endl;
                 double phongValue = max(rayDotReflect, 0.0);
+                //cout << phongValue << endl;
 
                 Color addedColor = getColor(pointOfInt) * lf * lambert * coefficients[1];
+                //addedColor.print();
+                //cout << "1...." << endl;
 
-                //std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue << std::endl;
+
+//                std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
+//                std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue << std::endl;
                 newColor = newColor + addedColor;
-
-                addedColor = Color(255, 255, 255) * lf * pow(phongValue, shine) * coefficients[2];
-
+//                light.color.print();
+                cout << phongValue << endl;
+//                std::cout << "----" << coefficients[2] << std::endl;
+                addedColor = light.color * lf * pow(phongValue, shine) * coefficients[2];
+//                std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
+//                std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue << std::endl;
+                addedColor.print();
                 newColor = newColor + addedColor;
 
             }
-
+            //newColor.print();
         }
 
+
         if (level > 0) {
+            //cout << "Now level greater than 0 ----- " << level << endl;
             double rayDotNormal = ray.direction.dotMultiplication(normal);
             Point scaledRayDotNormal = normal * (rayDotNormal * 2.0);
             Point rayReflectedDir = ray.direction - scaledRayDotNormal;
-            rayReflectedDir.normalizePoint();
+            rayReflectedDir = rayReflectedDir.normalizePoint();
             Point rayReflectedStart = pointOfInt + rayReflectedDir;
             Ray rayReflected(rayReflectedStart, rayReflectedDir);
-
             int indexOfMin = NEG_INF;
             double minT = INF;
             int count = 0;
             for (auto object : allObjects) {
 
                 Ray temp = object->intersect(rayReflected, 0);
+                //cout << temp.t << "------ TEMP T ----- " << endl;
                 if (temp.t < minT && temp.t > 0) {
+                    //cout << temp.t << "------ Inside IF ----- " << indexOfMin << endl;
                     minT = temp.t;
                     indexOfMin = count;
 
@@ -393,6 +435,7 @@ public:
             }
 
             if (indexOfMin != NEG_INF)  {
+                //cout << "Index of min not equal NEG INF ----- " << indexOfMin << endl;
                 Ray next = allObjects[indexOfMin]->intersect(rayReflected, level-1);
                 Color tempNext = next.color * coefficients[3] * 1.0;
                 newColor = newColor + tempNext;
@@ -405,7 +448,7 @@ public:
         return newColor;
     }
 
-    Ray intersect(Ray &r, int level) override {
+    Ray intersect(Ray r, int level) override {
 
         Ray newRay;
         newRay.t = getT(r);
@@ -415,10 +458,11 @@ public:
         newRay.color = getColor(pointOfInt) * this->coefficients[0]; //multiplying ambient
 
         newRay.color.clip();
-
+        //cout << this->coefficients[0] << " ::::: MY COLOR :::::" << newRay.color.red << ", " << newRay.color.green << ", " << newRay.color.blue << endl;
         if (newRay.t < 0 || level < 1) return newRay;
 
         Color changedColor = this->illuminate(level, pointOfInt, r);
+        //changedColor.print();
         //cout << "Changed " << changedColor.red << ", " << changedColor.green << ", " << changedColor.blue << endl;
         newRay.color = changedColor;
 
