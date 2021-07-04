@@ -303,8 +303,8 @@ public:
                 //cout << "1...." << endl;
 
 
-//              std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
-//              std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue << std::endl;
+                //std::cout << newColor.red << ", " << newColor.green << ", " << newColor.blue;
+                //std::cout << "-----" << addedColor.red << ", " << addedColor.green << ", " << addedColor.blue << std::endl;
                 newColor = newColor + addedColor;
 //              light.color.print();
 //                if (shine != 1) {

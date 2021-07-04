@@ -26,10 +26,10 @@ Point rotateOneAlongAnother(Point &toBeRotated, Point &respective, double angleO
     return answer;
 }
 
-
 void clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(0,0,0,0);	//color black
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 void capture() {
@@ -94,8 +94,11 @@ void capture() {
         }
     }
     bitmapImage.save_image("1605106.bmp");
-
-
+    bitmapImage.clear();
+    for (int i = 0; i < nearPlaneColors.size(); ++i) {
+        nearPlaneColors[i].clear();
+    }
+    nearPlaneColors.clear();
 }
 void keyboardListener(unsigned char key, int x,int y){
     double positiveAngle = 3.0;
